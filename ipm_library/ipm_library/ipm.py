@@ -116,7 +116,7 @@ class IPM:
             self._camera_info,
             points,
             plane_normal,
-            plane_base_point)[0]
+            plane_base_point)
 
         # Transform output point if output frame if needed
         if output_frame is not None:

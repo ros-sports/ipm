@@ -7,7 +7,7 @@ from sensor_msgs.msg import CameraInfo
 from geometry_msgs.msg import TransformStamped
 from tf2_geometry_msgs import PointStamped
 from numba import jit
-from typing import Tuple
+from typing import Tuple, Optional
 
 
 def transform_to_normal_plane(plane: Plane) -> Tuple[np.ndarray, np.ndarray]:
@@ -30,11 +30,14 @@ def transform_plane_to_frame(
         output_frame: str,
         stamp,
         buffer: tf2_ros.Buffer,
-        timeout: Duration = 0.2) -> Tuple[np.ndarray, np.ndarray]:
+        timeout: Optional[Duration] = None) -> Tuple[np.ndarray, np.ndarray]:
     """
     returns a plane which an object is believed to be on as a tuple of a point on this plane and a normal
     #TODO docs
     """
+
+    if timeout is None:
+        timeout = Duration(seconds=0.2)
 
     field_normal = PointStamped()
     field_normal.header.frame_id = input_frame

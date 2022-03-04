@@ -12,7 +12,7 @@ from ipm_msgs.msg import PlaneStamped
 class IPM:
     _camera_info: Optional[CameraInfo] = None
 
-    def __init__(self, tf_buffer: tf2_ros.Buffer, camera_info: CameraInfo = None) -> None:
+    def __init__(self, tf_buffer: tf2_ros.Buffer, camera_info: Optional[CameraInfo] = None) -> None:
         """
         Creates a new inverse perspective mapper
 
@@ -44,7 +44,7 @@ class IPM:
             self,
             plane: PlaneStamped,
             point: PointStamped,
-            output_frame: str = None) -> PointStamped:
+            output_frame: Optional[str] = None) -> PointStamped:
         """
         Projects a `PointStamped` onto a given plane using the latest CameraInfo intrinsics.
 
@@ -83,7 +83,7 @@ class IPM:
             plane_msg: PlaneStamped,
             points: np.ndarray,
             points_header: Header,
-            output_frame: str = None) -> np.ndarray:
+            output_frame: Optional[str] = None) -> np.ndarray:
         """
         Projects a `PointStamped` onto a given plane using the latest CameraInfo intrinsics.
 

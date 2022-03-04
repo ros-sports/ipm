@@ -6,6 +6,7 @@ from std_msgs.msg import Header
 from tf2_geometry_msgs import PointStamped
 from typing import Tuple
 from ipm_library import utils
+from ipm_library.exceptions import NoIntersectionError
 from ipm_msgs.msg import PlaneStamped
 
 class IPM:
@@ -62,7 +63,7 @@ class IPM:
 
         # Check if we have any nan values, aka if we have a valid intersection
         if np.isnan(np_point).any():
-            raise Exception() # TODO custom exception
+            raise NoIntersectionError
 
         # Create output point
         intersection_stamped = PointStamped()

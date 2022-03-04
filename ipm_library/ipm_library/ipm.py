@@ -13,6 +13,14 @@ class IPM:
     _tf_buffer = None
 
     def __init__(self, tf_buffer: tf2_ros.Buffer, camera_info: CameraInfo = None) -> None:
+        """
+        Creates a new inverse perspective mapper
+
+        :param tf_buffer: This module needs access to a sufficiently large tf2 buffer
+        :param camera_info: `CameraInfo` Message containing the camera intrinsics, camera frame, ...
+            The camera info can be updated later on using the setter or
+            provided directly if it is unlikly to change
+        """
         self._tf_buffer = tf_buffer # Needs a listener that is init in the node context, so we need a reference
         self.set_camera_info(camera_info)
 

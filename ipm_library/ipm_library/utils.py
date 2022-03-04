@@ -1,4 +1,3 @@
-import math
 import tf2_ros
 import transforms3d
 import numpy as np

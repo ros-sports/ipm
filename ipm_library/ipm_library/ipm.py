@@ -2,11 +2,11 @@
 import tf2_ros
 import numpy as np
 from sensor_msgs.msg import CameraInfo
-from shape_msgs.msg import Plane
 from std_msgs.msg import Header
 from tf2_geometry_msgs import PointStamped
 from typing import Tuple
 from ipm_library import utils
+from ipm_msgs.msg import PlaneStamped
 
 class IPM:
     _camera_info = None
@@ -42,7 +42,7 @@ class IPM:
 
     def project_point(
             self,
-            plane: Tuple[Plane, str],
+            plane: PlaneStamped,
             point: PointStamped,
             output_frame: str = None) -> PointStamped:
         """
@@ -80,33 +80,33 @@ class IPM:
 
     def project_points(
             self,
-            plane: Tuple[Plane, str],
+            plane_msg: PlaneStamped,
             points: np.ndarray,
             points_header: Header,
             output_frame: str = None) -> np.ndarray:
         """
         Projects a `PointStamped` onto a given plane using the latest CameraInfo intrinsics.
 
-        :param plane: Plane in which the projection should happen
+        :param plane_msg: Plane in which the projection should happen
         :param points: Points that should be projected in the form of
             a nx3 numpy array where n is the number of points
         :param points_header: Header for the numpy message containing the frame and time stamp
         :param output_frame: TF2 frame in which the output should be provided
         :returns: The points projected onto the given plane in the output frame
         """
-        assert points_header.stamp == plane.header.stamp, \
+        assert points_header.stamp == plane_msg.header.stamp, \
             "Plane and Point need to have the same time stamp"
         assert self.camera_info_recived(), "No camera info set"
         assert self._camera_info.header.frame_id == points_header.frame_id, \
             "Points needs to be in frame described in the camera info message"
 
         # Convert plane to normal format
-        plane = utils.transform_to_normal_plane(plane)
+        plane = utils.transform_to_normal_plane(plane_msg.plane)
 
         # View plane from camera frame
         plane_normal, plane_base_point = utils.transform_plane_to_frame(
             plane=plane,
-            input_frame=plane.header.frame_id,
+            input_frame=plane_msg.header.frame_id,
             output_frame=self._camera_info.header.frame_id,
             stamp=points_header.stamp,
             buffer=self._tf_buffer)

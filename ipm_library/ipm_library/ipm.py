@@ -1,17 +1,16 @@
 #!/usr/bin/env python3
 import tf2_ros
 import numpy as np
+from typing import Optional
 from sensor_msgs.msg import CameraInfo
 from std_msgs.msg import Header
 from tf2_geometry_msgs import PointStamped
-from typing import Tuple
 from ipm_library import utils
 from ipm_library.exceptions import NoIntersectionError
 from ipm_msgs.msg import PlaneStamped
 
 class IPM:
-    _camera_info = None
-    _tf_buffer = None
+    _camera_info: Optional[CameraInfo] = None
 
     def __init__(self, tf_buffer: tf2_ros.Buffer, camera_info: CameraInfo = None) -> None:
         """

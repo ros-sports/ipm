@@ -150,7 +150,7 @@ def transform_points(point_cloud: np.ndarray, transform: TransformStamped) -> np
     for i in range(len(point_cloud)):
         point_affine = build_affine(point_cloud[i], np.eye(3))
         point_cloud[i] = get_translation_from_affine(
-            np.matmul(point_affine, affine_transformation))
+            np.matmul(affine_transformation, point_affine))
 
     return point_cloud
 

@@ -1,5 +1,4 @@
 import tf2_ros
-import transforms3d
 import numpy as np
 from rclpy.duration import Duration
 from shape_msgs.msg import Plane
@@ -133,23 +132,68 @@ def transform_points(point_cloud: np.ndarray, transform: TransformStamped) -> np
     :returns: Array with the same shape as the input array, but with the transformation applied
     """
     # Build affine transformation
-    T = [
+    transform_translation = np.array([
         transform.transform.translation.x,
         transform.transform.translation.y,
         transform.transform.translation.z
-    ]
-    R = transforms3d.quaternions.quat2mat(
-        [
+    ])
+    transform_rotation_matrix = get_mat_from_quat(
+        np.array([
             transform.transform.rotation.w,
             transform.transform.rotation.x,
             transform.transform.rotation.y,
             transform.transform.rotation.z
-        ])
-    affine = transforms3d.affines.compose(T, R, np.ones(3))
+        ]))
+    affine_transformation = build_affine(transform_translation, transform_rotation_matrix)
 
     # Apply transformation to all points
     for i in range(len(point_cloud)):
-        p = transforms3d.affines.compose(point_cloud[i], np.eye(3), np.ones(3))
-        point_cloud[i] = transforms3d.affines.decompose(np.matmul(p, affine))[0]
+        point_affine = build_affine(point_cloud[i], np.eye(3))
+        point_cloud[i] = get_translation_from_affine(
+            np.matmul(point_affine, affine_transformation))
 
     return point_cloud
+
+def build_affine(translation: np.ndarray, rotation: np.ndarray) -> np.ndarray:
+    """
+    Builds an affine matrix based on a given translation and rotation matrix.
+
+    :param translation: An array containing an X, Y, and Z translation component
+    :param rotation: An array containing a 3x3 rotation matrix
+    :returns: A 4x4 affine matrix
+    """
+    affine = np.eye(4)
+    affine[:3,:3] = rotation
+    affine[:3,3] = translation[:]
+    return affine
+
+def get_translation_from_affine(affine: np.ndarray) -> np.ndarray:
+    """
+    Returns the translation component of an affine matrix
+
+    :param affine: A 4x4 affine matrix
+    :returns: An array containing an X, Y, and Z translation component
+    """
+    return affine[:-1,-1]
+
+def get_mat_from_quat(quaternion: np.ndarray):
+    """
+    Converts a quaternion to a rotation matrix
+
+    :param quaternion: A numpy array containing the w, x, y, and z components of the quaternion
+    :returns: An array containing an X, Y, and Z translation component
+    """
+    Nq = np.linalg.norm(quaternion)
+    if Nq < np.finfo(np.float64).eps:
+        return np.eye(3)
+
+    XYZ = quaternion[1:] * 2.0 / Nq
+    wXYZ = XYZ * quaternion[0]
+    xXYZ = XYZ * quaternion[1]
+    yYZ = XYZ[1:] * quaternion[2]
+    zZ = XYZ[2] * quaternion[3]
+
+    return np.array(
+        [[ 1.0-(yYZ[0]+zZ), xXYZ[1]-wXYZ[2], xXYZ[2]+wXYZ[1]],
+        [ xXYZ[1]+wXYZ[2], 1.0-(xXYZ[0]+zZ), yYZ[1]-wXYZ[0]],
+        [ xXYZ[2]-wXYZ[1], yYZ[1]+wXYZ[0], 1.0-(xXYZ[0]+yYZ[0])]])

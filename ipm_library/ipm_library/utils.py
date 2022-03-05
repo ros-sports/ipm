@@ -5,7 +5,6 @@ from shape_msgs.msg import Plane
 from sensor_msgs.msg import CameraInfo
 from geometry_msgs.msg import TransformStamped
 from tf2_geometry_msgs import PointStamped
-from numba import jit
 from typing import Tuple, Optional
 
 
@@ -122,7 +121,6 @@ def line_plane_intersections(
 
     return ray_directions
 
-@jit
 def transform_points(point_cloud: np.ndarray, transform: TransformStamped) -> np.ndarray:
     """
     Transforms a bulk of points from an numpy array using a provided `TransformStamped`.
@@ -144,37 +142,10 @@ def transform_points(point_cloud: np.ndarray, transform: TransformStamped) -> np
             transform.transform.rotation.y,
             transform.transform.rotation.z
         ]))
-    affine_transformation = build_affine(transform_translation, transform_rotation_matrix)
 
-    # Apply transformation to all points
-    for i in range(len(point_cloud)):
-        point_affine = build_affine(point_cloud[i], np.eye(3))
-        point_cloud[i] = get_translation_from_affine(
-            np.matmul(affine_transformation, point_affine))
-
-    return point_cloud
-
-def build_affine(translation: np.ndarray, rotation: np.ndarray) -> np.ndarray:
-    """
-    Builds an affine matrix based on a given translation and rotation matrix.
-
-    :param translation: An array containing an X, Y, and Z translation component
-    :param rotation: An array containing a 3x3 rotation matrix
-    :returns: A 4x4 affine matrix
-    """
-    affine = np.eye(4)
-    affine[:3,:3] = rotation
-    affine[:3,3] = translation[:]
-    return affine
-
-def get_translation_from_affine(affine: np.ndarray) -> np.ndarray:
-    """
-    Returns the translation component of an affine matrix
-
-    :param affine: A 4x4 affine matrix
-    :returns: An array containing an X, Y, and Z translation component
-    """
-    return affine[:-1,-1]
+    # "Batched" matmul meaning a matmul for each point
+    # First we offset all points by the translation part followed by a rotation using the rotation matrix
+    return np.einsum("ij, pj -> pi", transform_rotation_matrix, point_cloud + transform_translation)
 
 def get_mat_from_quat(quaternion: np.ndarray):
     """

@@ -179,7 +179,7 @@ def _get_mat_from_quat(quaternion: np.ndarray) -> np.ndarray:
     f185e866ecccb66c545559bc9f2e19cb5025e0ab/transforms3d/quaternions.py#L101
 
     :param quaternion: A numpy array containing the w, x, y, and z components of the quaternion
-    :returns: An array containing an X, Y, and Z translation component
+    :returns: The rotation matrix
     """
     Nq = np.sum(np.square(quaternion))
     if Nq < np.finfo(np.float64).eps:

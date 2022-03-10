@@ -22,6 +22,7 @@ def transform_to_normal_plane(plane: Plane) -> Tuple[np.ndarray, np.ndarray]:
     base_point = normal * d
     return normal, base_point
 
+
 def transform_plane_to_frame(
         plane: Tuple[np.ndarray, np.ndarray],
         input_frame: str,
@@ -52,7 +53,8 @@ def transform_plane_to_frame(
     field_normal.point.x = plane[0][0] + plane[1][0]
     field_normal.point.y = plane[0][1] + plane[1][1]
     field_normal.point.z = plane[0][2] + plane[1][2]
-    field_normal = buffer.transform(field_normal, output_frame, timeout=timeout)
+    field_normal = buffer.transform(
+        field_normal, output_frame, timeout=timeout)
     field_point = PointStamped()
     field_point.header.frame_id = input_frame
     field_point.header.stamp = stamp
@@ -61,12 +63,19 @@ def transform_plane_to_frame(
     field_point.point.z = plane[1][2]
     field_point = buffer.transform(field_point, output_frame, timeout=timeout)
 
-    field_normal = np.array([field_normal.point.x, field_normal.point.y, field_normal.point.z])
-    field_point = np.array([field_point.point.x, field_point.point.y, field_point.point.z])
+    field_normal = np.array([
+        field_normal.point.x,
+        field_normal.point.y,
+        field_normal.point.z])
+    field_point = np.array([
+        field_point.point.x,
+        field_point.point.y,
+        field_point.point.z])
 
     # field normal is a vector! so it stats at field point and goes up in z direction
     field_normal = field_point - field_normal
     return field_normal, field_point
+
 
 def get_field_intersection_for_pixels(
         camera_info: CameraInfo,
@@ -88,12 +97,15 @@ def get_field_intersection_for_pixels(
     binning_y = max(camera_info.binning_y, 1) / scale
 
     # Create rays
-    points[:, 0] = (points[:, 0] - (camera_projection_matrix[2] / binning_x)) / (camera_projection_matrix[0] / binning_x)
-    points[:, 1] = (points[:, 1] - (camera_projection_matrix[5] / binning_y)) / (camera_projection_matrix[4] / binning_y)
+    points[:, 0] = (points[:, 0] - (camera_projection_matrix[2] /
+                    binning_x)) / (camera_projection_matrix[0] / binning_x)
+    points[:, 1] = (points[:, 1] - (camera_projection_matrix[5] /
+                    binning_y)) / (camera_projection_matrix[4] / binning_y)
     points[:, 2] = 1
 
     # Calculate ray -> plane intersections
-    intersections = line_plane_intersections(plane_normal, plane_base_point, points)
+    intersections = line_plane_intersections(
+        plane_normal, plane_base_point, points)
 
     return intersections
 
@@ -109,17 +121,21 @@ def line_plane_intersections(
     :param plane_base_point: The base point of the projection plane
     :param ray_directions: A nx3 array with n being the number of rays
     """
-    n_dot_u = np.tensordot(plane_normal, ray_directions, axes=([0],[1]))
+    n_dot_u = np.tensordot(plane_normal, ray_directions, axes=([0], [1]))
     relative_ray_distance = -plane_normal.dot(-plane_base_point) / n_dot_u
 
     # we are casting a ray, intersections need to be in front of the camera
     relative_ray_distance[relative_ray_distance <= 0] = np.nan
 
-    ray_directions[:,0] = np.multiply(relative_ray_distance, ray_directions[:,0])
-    ray_directions[:,1] = np.multiply(relative_ray_distance, ray_directions[:,1])
-    ray_directions[:,2] = np.multiply(relative_ray_distance, ray_directions[:,2])
+    ray_directions[:, 0] = np.multiply(
+        relative_ray_distance, ray_directions[:, 0])
+    ray_directions[:, 1] = np.multiply(
+        relative_ray_distance, ray_directions[:, 1])
+    ray_directions[:, 2] = np.multiply(
+        relative_ray_distance, ray_directions[:, 2])
 
     return ray_directions
+
 
 def transform_points(point_cloud: np.ndarray, transform: Transform) -> np.ndarray:
     """
@@ -150,6 +166,7 @@ def transform_points(point_cloud: np.ndarray, transform: Transform) -> np.ndarra
         'ij, pj -> pi',
         transform_rotation_matrix,
         point_cloud) + transform_translation
+
 
 def _get_mat_from_quat(quaternion: np.ndarray) -> np.ndarray:
     """

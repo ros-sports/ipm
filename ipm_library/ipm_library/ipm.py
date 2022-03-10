@@ -9,6 +9,7 @@ from ipm_library import utils
 from ipm_library.exceptions import NoIntersectionError
 from ipm_msgs.msg import PlaneStamped
 
+
 class IPM:
     _camera_info: Optional[CameraInfo] = None
 
@@ -21,7 +22,7 @@ class IPM:
             The camera info can be updated later on using the setter or
             provided directly if it is unlikly to change
         """
-        self._tf_buffer = tf_buffer # Needs a listener that is init in the node context, so we need a reference
+        self._tf_buffer = tf_buffer  # Needs a listener that is init in the node context, so we need a reference
         self.set_camera_info(camera_info)
 
     def set_camera_info(self, camera_info: CameraInfo) -> None:
@@ -58,7 +59,7 @@ class IPM:
             plane,
             np.array([[point.point.x, point.point.y, point.point.z]]),
             point.header,
-            output_frame = None)[0]
+            output_frame=None)[0]
 
         # Check if we have any nan values, aka if we have a valid intersection
         if np.isnan(np_point).any():
@@ -74,7 +75,8 @@ class IPM:
 
         # Transform output point if output frame if needed
         if output_frame is not None:
-            intersection_stamped = self._tf_buffer.transform(intersection_stamped, output_frame)
+            intersection_stamped = self._tf_buffer.transform(
+                intersection_stamped, output_frame)
 
         return intersection_stamped
 
@@ -121,9 +123,10 @@ class IPM:
         # Transform output point if output frame if needed
         if output_frame is not None:
             output_transformation = self._tf_buffer.lookup_transform(
-                    output_frame,
-                    self._camera_info.header.frame_id,
-                    points_header.stamp)
-            np_points = utils.transform_points(np_points, output_transformation.transform)
+                output_frame,
+                self._camera_info.header.frame_id,
+                points_header.stamp)
+            np_points = utils.transform_points(
+                np_points, output_transformation.transform)
 
         return np_points

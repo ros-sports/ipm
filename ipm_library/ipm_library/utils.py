@@ -3,7 +3,7 @@ import numpy as np
 from rclpy.duration import Duration
 from shape_msgs.msg import Plane
 from sensor_msgs.msg import CameraInfo
-from geometry_msgs.msg import TransformStamped
+from geometry_msgs.msg import Transform
 from tf2_geometry_msgs import PointStamped
 from typing import Tuple, Optional
 
@@ -121,9 +121,9 @@ def line_plane_intersections(
 
     return ray_directions
 
-def transform_points(point_cloud: np.ndarray, transform: TransformStamped) -> np.ndarray:
+def transform_points(point_cloud: np.ndarray, transform: Transform) -> np.ndarray:
     """
-    Transforms a bulk of points from an numpy array using a provided `TransformStamped`.
+    Transforms a bulk of points from an numpy array using a provided `Transform`.
 
     :param point_cloud: nx3 Array of points where n is the number of points
     :param transform: TF2 transform used for the transformation
@@ -131,30 +131,40 @@ def transform_points(point_cloud: np.ndarray, transform: TransformStamped) -> np
     """
     # Build affine transformation
     transform_translation = np.array([
-        transform.transform.translation.x,
-        transform.transform.translation.y,
-        transform.transform.translation.z
+        transform.translation.x,
+        transform.translation.y,
+        transform.translation.z
     ])
-    transform_rotation_matrix = get_mat_from_quat(
+    transform_rotation_matrix = _get_mat_from_quat(
         np.array([
-            transform.transform.rotation.w,
-            transform.transform.rotation.x,
-            transform.transform.rotation.y,
-            transform.transform.rotation.z
+            transform.rotation.w,
+            transform.rotation.x,
+            transform.rotation.y,
+            transform.rotation.z
         ]))
 
     # "Batched" matmul meaning a matmul for each point
-    # First we offset all points by the translation part followed by a rotation using the rotation matrix
-    return np.einsum("ij, pj -> pi", transform_rotation_matrix, point_cloud + transform_translation)
+    # First we offset all points by the translation part
+    # followed by a rotation using the rotation matrix
+    return np.einsum(
+        'ij, pj -> pi',
+        transform_rotation_matrix,
+        point_cloud) + transform_translation
 
-def get_mat_from_quat(quaternion: np.ndarray):
+def _get_mat_from_quat(quaternion: np.ndarray) -> np.ndarray:
     """
-    Converts a quaternion to a rotation matrix
+    Convert a quaternion to a rotation matrix.
+
+    This method is currently needed because transforms3d is not released as a `.dep` and
+    would require user interaction to set up.
+
+    For reference see: https://github.com/matthew-brett/transforms3d/blob/
+    f185e866ecccb66c545559bc9f2e19cb5025e0ab/transforms3d/quaternions.py#L101
 
     :param quaternion: A numpy array containing the w, x, y, and z components of the quaternion
     :returns: An array containing an X, Y, and Z translation component
     """
-    Nq = np.linalg.norm(quaternion)
+    Nq = np.sum(np.square(quaternion))
     if Nq < np.finfo(np.float64).eps:
         return np.eye(3)
 
@@ -165,6 +175,6 @@ def get_mat_from_quat(quaternion: np.ndarray):
     zZ = XYZ[2] * quaternion[3]
 
     return np.array(
-        [[ 1.0-(yYZ[0]+zZ), xXYZ[1]-wXYZ[2], xXYZ[2]+wXYZ[1]],
-        [ xXYZ[1]+wXYZ[2], 1.0-(xXYZ[0]+zZ), yYZ[1]-wXYZ[0]],
-        [ xXYZ[2]-wXYZ[1], yYZ[1]+wXYZ[0], 1.0-(xXYZ[0]+yYZ[0])]])
+        [[1.0-(yYZ[0]+zZ), xXYZ[1]-wXYZ[2], xXYZ[2]+wXYZ[1]],
+         [xXYZ[1]+wXYZ[2], 1.0-(xXYZ[0]+zZ), yYZ[1]-wXYZ[0]],
+         [xXYZ[2]-wXYZ[1], yYZ[1]+wXYZ[0], 1.0-(xXYZ[0]+yYZ[0])]])

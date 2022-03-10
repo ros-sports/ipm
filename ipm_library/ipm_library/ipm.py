@@ -124,6 +124,6 @@ class IPM:
                     output_frame,
                     self._camera_info.header.frame_id,
                     points_header.stamp)
-            np_points = utils.transform_points(np_points, output_transformation)
+            np_points = utils.transform_points(np_points, output_transformation.transform)
 
         return np_points

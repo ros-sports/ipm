@@ -12,16 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import numpy as np
 import pytest
 import tf2_ros as tf2
-import numpy as np
-from ipm_library.ipm import IPM
+from geometry_msgs.msg import TransformStamped
 from ipm_library.exceptions import NoIntersectionError
+from ipm_library.ipm import IPM
+from ipm_msgs.msg import PlaneStamped
 from sensor_msgs.msg import CameraInfo
 from std_msgs.msg import Header
-from ipm_msgs.msg import PlaneStamped
 from tf2_geometry_msgs import PointStamped
-from geometry_msgs.msg import TransformStamped
 
 
 def test_ipm_camera_info():

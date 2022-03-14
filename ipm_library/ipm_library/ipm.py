@@ -12,15 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import tf2_ros
-import numpy as np
 from typing import Optional
+
+import numpy as np
+import tf2_ros
+from ipm_msgs.msg import PlaneStamped
 from sensor_msgs.msg import CameraInfo
 from std_msgs.msg import Header
 from tf2_geometry_msgs import PointStamped
+
 from ipm_library import utils
 from ipm_library.exceptions import NoIntersectionError
-from ipm_msgs.msg import PlaneStamped
 
 
 class IPM:

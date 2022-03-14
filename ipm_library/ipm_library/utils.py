@@ -12,14 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import tf2_ros
+from typing import Optional, Tuple
+
 import numpy as np
-from rclpy.duration import Duration
-from shape_msgs.msg import Plane
-from sensor_msgs.msg import CameraInfo
+import tf2_ros
 from geometry_msgs.msg import Transform
+from rclpy.duration import Duration
+from sensor_msgs.msg import CameraInfo
+from shape_msgs.msg import Plane
 from tf2_geometry_msgs import PointStamped
-from typing import Tuple, Optional
 
 
 def transform_to_normal_plane(plane: Plane) -> Tuple[np.ndarray, np.ndarray]:

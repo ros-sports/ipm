@@ -31,7 +31,8 @@ def transform_to_normal_plane(plane: Plane) -> Tuple[np.ndarray, np.ndarray]:
     """
     # ax + by + cz + d = 0 where a, b, c are the normal vector
     a, b, c, d = plane.coef
-    normal = np.linalg.norm(np.array([a, b, c]))
+    normal = np.array([a, b, c])
+    normal = normal / np.linalg.norm(normal)
     base_point = normal * d
     return normal, base_point
 

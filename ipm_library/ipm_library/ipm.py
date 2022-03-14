@@ -131,6 +131,10 @@ class IPM:
             stamp=points_header.stamp,
             buffer=self._tf_buffer)
 
+        # Convert points to float if they aren't allready
+        if points.dtype.char not in np.typecodes['AllFloat']:
+            points = points.astype(np.float32)
+
         # Get intersection points with plane
         np_points = utils.get_field_intersection_for_pixels(
             self._camera_info,

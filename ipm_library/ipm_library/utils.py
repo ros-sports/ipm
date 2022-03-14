@@ -24,8 +24,7 @@ from typing import Tuple, Optional
 
 def transform_to_normal_plane(plane: Plane) -> Tuple[np.ndarray, np.ndarray]:
     """
-    Converts a plane msg from the form `ax + by + cz + d = 0` to a normal vector
-    and a base point.
+    Convert a plane msg to a normal vector and a base point.
 
     :param plane: The input plane
     :returns: A tuple with the normal vector and the base_point
@@ -45,17 +44,19 @@ def transform_plane_to_frame(
         buffer: tf2_ros.Buffer,
         timeout: Optional[Duration] = None) -> Tuple[np.ndarray, np.ndarray]:
     """
-    Transforms a plane fron one frame to another.
+    Transform a plane fron one frame to another.
 
     :param plane: The planes normal and base point as numpy arrays
     :param input_frame: Current frame of the plane
     :param output_frame: The desired frame of the plane
-    :param stamp: Timestamp which is used to query the tf buffer and get the tranform at this moment
+    :param stamp: Timestamp which is used to query
+        the tf buffer and get the tranform at this moment
     :param buffer: The refrence to the used tf buffer
     :param timeout: An optinal timeout after which an exception is raised
-    :returns: A Tuple containing the planes normal and base point in the new frame at the provided timestamp
+    :returns: A Tuple containing the planes normal and base point in the
+         new frame at the provided timestamp
     """
-
+    # Set optinal timeout
     if timeout is None:
         timeout = Duration(seconds=0.2)
 
@@ -98,11 +99,14 @@ def get_field_intersection_for_pixels(
         plane_base_point: np.ndarray,
         scale: float = 1.0) -> np.ndarray:
     """
-    Projects an numpy array of points to the correspoding places on the field plane (in the camera frame).
+    Project an NumPy array of points in image space on the given plane.
+
     :param points: A nx3 array with n being the number of points
     :param plane_normal: The normal vektor of the projection plane
     :param plane_base_point: The base point of the projection plane
     :param scale: A scaling factor used if e.g. a mask with a lower resolution is transformed
+    :returns: A NumPy array containing the projected points
+        in 3d relative to the camera optical frame
     """
     camera_projection_matrix = camera_info.k
 
@@ -129,11 +133,12 @@ def line_plane_intersections(
         plane_base_point: np.ndarray,
         ray_directions: np.ndarray) -> np.ndarray:
     """
-    Calculates the intersections of rays with a plane described by a normal and a point
+    Calculate the intersections of rays with a plane described by a normal and a point.
 
     :param plane_normal: The normal vektor of the projection plane
     :param plane_base_point: The base point of the projection plane
     :param ray_directions: A nx3 array with n being the number of rays
+    :returns: A nx3 array containing the 3d intersection points with n being the number of rays.
     """
     n_dot_u = np.tensordot(plane_normal, ray_directions, axes=([0], [1]))
     relative_ray_distance = -plane_normal.dot(-plane_base_point) / n_dot_u
@@ -153,7 +158,7 @@ def line_plane_intersections(
 
 def transform_points(point_cloud: np.ndarray, transform: Transform) -> np.ndarray:
     """
-    Transforms a bulk of points from an numpy array using a provided `Transform`.
+    Transform a bulk of points from an numpy array using a provided `Transform`.
 
     :param point_cloud: nx3 Array of points where n is the number of points
     :param transform: TF2 transform used for the transformation
@@ -188,7 +193,6 @@ def _get_mat_from_quat(quaternion: np.ndarray) -> np.ndarray:
 
     This method is currently needed because transforms3d is not released as a `.dep` and
     would require user interaction to set up.
-
     For reference see: https://github.com/matthew-brett/transforms3d/blob/
     f185e866ecccb66c545559bc9f2e19cb5025e0ab/transforms3d/quaternions.py#L101
 

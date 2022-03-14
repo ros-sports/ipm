@@ -26,21 +26,26 @@ from ipm_msgs.msg import PlaneStamped
 class IPM:
     _camera_info: Optional[CameraInfo] = None
 
-    def __init__(self, tf_buffer: tf2_ros.Buffer, camera_info: Optional[CameraInfo] = None) -> None:
+    def __init__(
+            self,
+            tf_buffer: tf2_ros.Buffer,
+            camera_info: Optional[CameraInfo] = None) -> None:
         """
-        Creates a new inverse perspective mapper
+        Create a new inverse perspective mapper instance.
 
         :param tf_buffer: This module needs access to a sufficiently large tf2 buffer
-        :param camera_info: `CameraInfo` Message containing the camera intrinsics, camera frame, ...
+        :param camera_info: `CameraInfo` Message containing the
+            camera intrinsics, camera frame, ...
             The camera info can be updated later on using the setter or
             provided directly if it is unlikly to change
         """
-        self._tf_buffer = tf_buffer  # Needs a listener that is init in the node context, so we need a reference
+        # TF needs a listener that is init in the node context, so we need a reference
+        self._tf_buffer = tf_buffer
         self.set_camera_info(camera_info)
 
     def set_camera_info(self, camera_info: CameraInfo) -> None:
         """
-        Set a new `CameraInfo` message
+        Set a new `CameraInfo` message.
 
         :param camera_info: The updated camera info message.
         """
@@ -48,7 +53,7 @@ class IPM:
 
     def camera_info_recived(self) -> bool:
         """
-        Returns if `CameraInfo` message has been recived
+        Return if `CameraInfo` message has been recived.
 
         :returns: If the message was recived
         """

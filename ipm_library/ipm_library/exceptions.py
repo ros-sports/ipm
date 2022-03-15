@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 class NoIntersectionError(Exception):
     """Rased if a point is not able to be projected onto the plane."""
 

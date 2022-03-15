@@ -14,13 +14,13 @@
 
 from typing import Optional, Tuple
 
-import numpy as np
-import tf2_ros
 from geometry_msgs.msg import Transform
+import numpy as np
 from rclpy.duration import Duration
 from sensor_msgs.msg import CameraInfo
 from shape_msgs.msg import Plane
 from tf2_geometry_msgs import PointStamped
+import tf2_ros
 
 
 def transform_to_normal_plane(plane: Plane) -> Tuple[np.ndarray, np.ndarray]:

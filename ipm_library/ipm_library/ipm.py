@@ -14,15 +14,14 @@
 
 from typing import Optional
 
-import numpy as np
-import tf2_ros
+from ipm_library import utils
+from ipm_library.exceptions import NoIntersectionError
 from ipm_msgs.msg import PlaneStamped
+import numpy as np
 from sensor_msgs.msg import CameraInfo
 from std_msgs.msg import Header
 from tf2_geometry_msgs import PointStamped
-
-from ipm_library import utils
-from ipm_library.exceptions import NoIntersectionError
+import tf2_ros
 
 
 class IPM:

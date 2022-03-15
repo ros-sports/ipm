@@ -16,7 +16,7 @@ setup(
     maintainer='florian',
     maintainer_email='git@flova.de',
     description='Inverse Perspective Mapping ROS2 Library',
-    license='MIT',
+    license='Apache License, Version 2.0',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [

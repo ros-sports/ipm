@@ -1,0 +1,5 @@
+ipm_interfaces/PlaneStamped plane
+sensor_msgs/PointCloud2 points
+std_msgs/String output_frame
+---
+sensor_msgs/PointCloud2 points

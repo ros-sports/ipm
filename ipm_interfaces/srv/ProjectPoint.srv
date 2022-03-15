@@ -1,0 +1,5 @@
+ipm_interfaces/PlaneStamped plane
+geometry_msgs/Point point
+std_msgs/String output_frame
+---
+geometry_msgs/Point point

@@ -1,0 +1,5 @@
+repositories:
+  geometry2:
+    type: git
+    url: https://github.com/Flova/geometry2-1.git
+    version: no_pykdl

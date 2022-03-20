@@ -14,15 +14,14 @@
 
 from typing import Optional
 
-import numpy as np
-import tf2_ros
+from ipm_library import utils
+from ipm_library.exceptions import NoIntersectionError
 from ipm_msgs.msg import PlaneStamped
+import numpy as np
 from sensor_msgs.msg import CameraInfo
 from std_msgs.msg import Header
 from tf2_geometry_msgs import PointStamped
-
-from ipm_library import utils
-from ipm_library.exceptions import NoIntersectionError
+import tf2_ros
 
 
 class IPM:
@@ -117,10 +116,10 @@ class IPM:
         :returns: The points projected onto the given plane in the output frame
         """
         assert points_header.stamp == plane_msg.header.stamp, \
-            "Plane and Point need to have the same time stamp"
-        assert self.camera_info_recived(), "No camera info set"
+            'Plane and Point need to have the same time stamp'
+        assert self.camera_info_recived(), 'No camera info set'
         assert self._camera_info.header.frame_id == points_header.frame_id, \
-            "Points needs to be in frame described in the camera info message"
+            'Points needs to be in frame described in the camera info message'
 
         # Convert plane to normal format
         plane = utils.transform_to_normal_plane(plane_msg.plane)

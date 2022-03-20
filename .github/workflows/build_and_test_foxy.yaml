@@ -24,7 +24,10 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      - uses: ros-tooling/setup-ros@v0.2
+      - uses: actions/checkout@v2
+      - uses: ros-tooling/setup-ros@v0.3
       - uses: ros-tooling/action-ros-ci@v0.2
         with:
+          package-name: ipm_msgs ipm_library
           target-ros2-distro: foxy
+          vcs-repo-file-url: dependencies.repos

@@ -32,13 +32,13 @@ def test_ipm_camera_info():
     cam = CameraInfo()
     # Create an IPM
     ipm1 = IPM(tf_buffer, cam)
-    assert ipm1.camera_info_recived(), 'Failed to set camera info in constructor'
+    assert ipm1.camera_info_received(), 'Failed to set camera info in constructor'
     # Create another IPM without the CameraInfo
     ipm2 = IPM(tf_buffer)
-    assert not ipm2.camera_info_recived(), 'Missing camera info not recognized'
+    assert not ipm2.camera_info_received(), 'Missing camera info not recognized'
     # Set camera info
     ipm2.set_camera_info(cam)
-    assert ipm1.camera_info_recived(), 'Failed to set camera info'
+    assert ipm1.camera_info_received(), 'Failed to set camera info'
     # Set another camera info
     ipm2.set_camera_info(CameraInfo(header=Header(frame_id='test')))
     assert ipm2._camera_info != cam, 'Camera info not updated'

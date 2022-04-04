@@ -52,11 +52,11 @@ class IPM:
         """
         self._camera_info = camera_info
 
-    def camera_info_recived(self) -> bool:
+    def camera_info_received(self) -> bool:
         """
-        Return if `CameraInfo` message has been recived.
+        Return if `CameraInfo` message has been received.
 
-        :returns: If the message was recived
+        :returns: If the message was received
         """
         return self._camera_info is not None
 
@@ -117,7 +117,7 @@ class IPM:
         """
         assert points_header.stamp == plane_msg.header.stamp, \
             'Plane and Point need to have the same time stamp'
-        assert self.camera_info_recived(), 'No camera info set'
+        assert self.camera_info_received(), 'No camera info set'
         assert self._camera_info.header.frame_id == points_header.frame_id, \
             'Points needs to be in frame described in the camera info message'
 

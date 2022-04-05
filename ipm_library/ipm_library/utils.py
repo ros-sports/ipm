@@ -46,7 +46,7 @@ def transform_plane_to_frame(
         buffer: tf2_ros.Buffer,
         timeout: Optional[Duration] = None) -> Tuple[np.ndarray, np.ndarray]:
     """
-    Transform a plane fron one frame to another.
+    Transform a plane from one frame to another.
 
     :param plane: The planes normal and base point as numpy arrays
     :param input_frame: Current frame of the plane

@@ -1,5 +1,0 @@
-repositories:
-  geometry2:
-    type: git
-    url: https://github.com/ros2/geometry2.git
-    version: ros2

@@ -104,7 +104,7 @@ def get_field_intersection_for_pixels(
     Project an NumPy array of points in image space on the given plane.
 
     :param points: A nx3 array with n being the number of points
-    :param plane_normal: The normal vektor of the projection plane
+    :param plane_normal: The normal vector of the projection plane
     :param plane_base_point: The base point of the projection plane
     :param scale: A scaling factor used if e.g. a mask with a lower resolution is transformed
     :returns: A NumPy array containing the projected points
@@ -137,7 +137,7 @@ def line_plane_intersections(
     """
     Calculate the intersections of rays with a plane described by a normal and a point.
 
-    :param plane_normal: The normal vektor of the projection plane
+    :param plane_normal: The normal vector of the projection plane
     :param plane_base_point: The base point of the projection plane
     :param ray_directions: A nx3 array with n being the number of rays
     :returns: A nx3 array containing the 3d intersection points with n being the number of rays.

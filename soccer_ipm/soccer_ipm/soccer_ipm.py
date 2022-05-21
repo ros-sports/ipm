@@ -209,7 +209,7 @@ class SoccerIPM(Node):
         field = self.get_field(msg.header.stamp, 0.0)
 
         obstacles = ObstacleRelativeArray()
-        obstacles.header = msg.header
+        obstacles.header.stamp = msg.header.stamp
         obstacles.header.frame_id = self._base_footprint_frame
 
         for robot in msg.robots:
@@ -218,7 +218,7 @@ class SoccerIPM(Node):
             if not self._object_at_bottom_of_image(
                     self._bb_footpoint(robot.bb).y,
                     self._goalpost_footpoint_out_of_image_threshold):
-                # Create footpoint
+                # Create footpoint  
                 footpoint = PointStamped(
                     header=msg.header,
                     point=self._bb_footpoint(robot.bb)
@@ -330,8 +330,8 @@ class SoccerIPM(Node):
     def _bb_footpoint(self, bounding_box) -> Point:
         # TODO rotated bounding boxes
         return Point(
-            x=float(bounding_box.center.x + bounding_box.size_x // 2),
-            y=float(bounding_box.center.y),
+            x=float(bounding_box.center.position.x),
+            y=float(bounding_box.center.position.y + bounding_box.size_y // 2),
         )
 
 

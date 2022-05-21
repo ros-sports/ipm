@@ -1,12 +1,11 @@
-from email.header import Header
 import cv2
 import rclpy
-import imp
 import threading
 from ipm_library.exceptions import NoIntersectionError
 from ipm_library.ipm import IPM
 from ipm_msgs.msg import PlaneStamped
 import numpy as np
+from std_msgs.msg import Header
 from sensor_msgs.msg import Image, CameraInfo, PointCloud2
 from tf2_geometry_msgs import PointStamped
 from sensor_msgs_py.point_cloud2 import create_cloud_xyz32
@@ -17,6 +16,7 @@ from cv_bridge import CvBridge
 from rclpy.node import Node
 from rclpy.duration import Duration
 from rclpy.time import Time
+from rclpy.executors import MultiThreadedExecutor
 
 from soccer_vision_2d_msgs.msg import BallArray, FieldBoundary, Goalpost, GoalpostArray, Robot, RobotArray, MarkingArray, MarkingSegment
 from humanoid_league_msgs.msg import PoseWithCertaintyArray, PoseWithCertainty, ObstacleRelativeArray, ObstacleRelative
@@ -71,8 +71,12 @@ class SoccerIPM(Node):
         # Subscribe to camera info
         self.create_subscription(CameraInfo, camera_info_topic, self.ipm.set_camera_info, 1)
 
+        # Make executor
+        ex = MultiThreadedExecutor(num_threads=4)
+        ex.add_node(self)
+
         # Start new thread to spin node and aquire new data.
-        x = threading.Thread(target=rclpy.spin, args=(self,))
+        x = threading.Thread(target=ex.spin)
         x.start()
 
         # Wait for Camera info
@@ -89,11 +93,11 @@ class SoccerIPM(Node):
 
         # Wait up to 5 seconds for transforms to become available, then print an error and try again
         # Time(0) gets the most recent transform
-        while not self.tf_buffer.can_transform(self.base_footprint_frame,
+        while not self.tf_buffer.can_transform(self._base_footprint_frame,
                                                 self.ipm.get_camera_info().header.frame_id,
                                                 Time(seconds=0),
                                                 timeout=Duration(seconds=5)):
-            self.get_logger().error("Could not get transformation from " + self.base_footprint_frame +
+            self.get_logger().error("Could not get transformation from " + self._base_footprint_frame +
                          "to " + self.ipm.get_camera_info().header.frame_id)
 
         self.balls_relative_pub = self.create_publisher(PoseWithCertaintyArray, "balls_relative", 1)
@@ -151,7 +155,7 @@ class SoccerIPM(Node):
 
                 ball_relative = PoseWithCertainty()
                 ball_relative.pose.pose.position = transformed_ball.point
-                ball_relative.confidence = ball.confidence
+                ball_relative.confidence = ball.confidence.confidence
                 balls_relative.poses.append(ball_relative)
             except NoIntersectionError:
                 self.get_logger().warn(
@@ -163,7 +167,7 @@ class SoccerIPM(Node):
         self.balls_relative_pub.publish(balls_relative)
 
     def callback_goalposts(self, msg: GoalpostArray):
-        field = self.get_plane(msg.header.stamp)
+        field = self.get_field(msg.header.stamp)
 
         # Create new message
         goalposts_relative_msg = PoseWithCertaintyArray()
@@ -190,7 +194,7 @@ class SoccerIPM(Node):
 
                     post_relative = PoseWithCertainty()
                     post_relative.pose.pose.position = relative_foot_point.point
-                    post_relative.confidence = goal_post_in_image.confidence
+                    post_relative.confidence = goal_post_in_image.confidence.confidence
                     goalposts_relative_msg.poses.append(post_relative)
                 except NoIntersectionError:
                     self.get_logger().warn(
@@ -202,7 +206,7 @@ class SoccerIPM(Node):
         self.goalposts_relative.publish(goalposts_relative_msg)
 
     def callback_robots(self, msg: RobotArray):
-        field = self.get_plane(msg.header.stamp, 0.0)
+        field = self.get_field(msg.header.stamp, 0.0)
 
         obstacles = ObstacleRelativeArray()
         obstacles.header = msg.header
@@ -227,7 +231,7 @@ class SoccerIPM(Node):
                         output_frame=self._base_footprint_frame)
 
                     obstacle = ObstacleRelative()
-                    obstacle.pose.confidence = robot.confidence
+                    obstacle.pose.confidence = robot.confidence.confidence
                     obstacle.type = robot.attributes.team
                     obstacle.pose.pose.pose.position = relative_foot_point.point
                     obstacles.obstacles.append(obstacle)
@@ -238,10 +242,10 @@ class SoccerIPM(Node):
                             footpoint.point.y),
                         throttle_duration_sec=5)
 
-        self.obstacle_relative_pub.publish(obstacles)
+        self.robots_relative_pub.publish(obstacles)
 
-    def _callback_field_boundary(self, msg: FieldBoundary):
-        field = self.get_plane(msg.header.stamp, 0.0)
+    def callback_field_boundary(self, msg: FieldBoundary):
+        field = self.get_field(msg.header.stamp, 0.0)
 
         field_boundary = PolygonStamped()
         field_boundary.header = msg.header
@@ -271,12 +275,12 @@ class SoccerIPM(Node):
 
         self.field_boundary_pub.publish(field_boundary)
 
-    def _callback_masks(self, msg: Image, publisher, encoding='8UC1', scale: float = 1.0):   # TODO add publisher type
+    def callback_masks(self, msg: Image, publisher, encoding='8UC1', scale: float = 1.0):   # TODO add publisher type
         """
         Projects a mask from the input image as a pointcloud on the field plane.
         """
         # Get field plane
-        field = self.get_plane(msg.header.stamp, 0.0)  # TODO
+        field = self.get_field(msg.header.stamp, 0.0)  # TODO
         if field is None:
             return
 
@@ -290,8 +294,8 @@ class SoccerIPM(Node):
 
         # Restructure index tuple to a array
         point_idx_array = np.empty((point_idx_tuple[0].shape[0], 3))
-        point_idx_array[:, 0] = point_idx_tuple[1]
-        point_idx_array[:, 1] = point_idx_tuple[0]
+        point_idx_array[:, 0] = point_idx_tuple[1] / scale
+        point_idx_array[:, 1] = point_idx_tuple[0] / scale
 
         # Project points
         points_on_plane = self.ipm.project_points(

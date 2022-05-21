@@ -153,7 +153,7 @@ class SoccerIPM(Node):
                     ball_point,
                     output_frame=self._base_footprint_frame)
 
-                ball_relative = sv3dm.B all()
+                ball_relative = sv3dm.Ball()
                 ball_relative.center = transformed_ball.point
                 ball_relative.confidence = ball.confidence
                 balls_relative.balls.append(ball_relative)
@@ -195,8 +195,8 @@ class SoccerIPM(Node):
                     post_relative = sv3dm.Goalpost()
                     post_relative.attributes = goal_post_in_image.attributes
                     post_relative.bb.center.position = relative_foot_point.point
-                    post_relative.bb.size.x = 0.3 # TODO better size estimation
-                    post_relative.bb.size.x = 0.3 # TODO better size estimation
+                    post_relative.bb.size.x = 0.1 # TODO better size estimation
+                    post_relative.bb.size.x = 0.1 # TODO better size estimation
                     post_relative.confidence = goal_post_in_image.confidence
                     goalposts_relative_msg.posts.append(post_relative)
                 except NoIntersectionError:

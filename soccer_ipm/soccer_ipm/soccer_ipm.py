@@ -104,13 +104,13 @@ class SoccerIPM(Node):
         self.line_mask_relative_pc_pub = self.create_publisher(PointCloud2, "line_mask_relative_pc", 1)
         self.goalposts_relative = self.create_publisher(sv3dm.GoalpostArray, "goal_posts_relative", 1)
         self.robots_relative_pub = self.create_publisher(sv3dm.RobotArray, "robots_relative", 1)
-        self.field_boundary_pub = self.create_publisher(PolygonStamped, "field_boundary_relative", 1)
+        self.field_boundary_pub = self.create_publisher(sv3dm.FieldBoundary, "field_boundary_relative", 1)
 
         # Subscribe to image space data topics
         self.create_subscription(BallArray, balls_in_image_topic, self.callback_ball, 1)
         self.create_subscription(GoalpostArray, goalposts_in_image_topic, self.callback_goalposts, 1)
         self.create_subscription(RobotArray, obstacles_in_image_topic, self.callback_robots, 1)
-        self.create_subscription(PolygonStamped, field_boundary_in_image_topic,
+        self.create_subscription(FieldBoundary, field_boundary_in_image_topic,
                          self.callback_field_boundary, 1)
         self.create_subscription(Image, line_mask_in_image_topic,
             lambda msg: self.callback_masks(
@@ -253,7 +253,7 @@ class SoccerIPM(Node):
         field = self.get_field(msg.header.stamp, 0.0)
 
         field_boundary = sv3dm.FieldBoundary()
-        field_boundary.header = msg.header
+        field_boundary.header.stamp = msg.header.stamp
         field_boundary.header.frame_id = self._base_footprint_frame
         field_boundary.confidence = field_boundary.confidence
 

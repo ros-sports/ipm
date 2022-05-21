@@ -196,7 +196,8 @@ class SoccerIPM(Node):
                     post_relative.attributes = goal_post_in_image.attributes
                     post_relative.bb.center.position = relative_foot_point.point
                     post_relative.bb.size.x = 0.1 # TODO better size estimation
-                    post_relative.bb.size.x = 0.1 # TODO better size estimation
+                    post_relative.bb.size.y = 0.1 # TODO better size estimation
+                    post_relative.bb.size.z = 1.5 # TODO better size estimation
                     post_relative.confidence = goal_post_in_image.confidence
                     goalposts_relative_msg.posts.append(post_relative)
                 except NoIntersectionError:
@@ -238,7 +239,8 @@ class SoccerIPM(Node):
                     transformed_robot.confidence = robot.confidence
                     transformed_robot.bb.center.position = relative_foot_point.point
                     transformed_robot.bb.size.x = 0.3 # TODO better size estimation
-                    transformed_robot.bb.size.x = 0.3 # TODO better size estimation
+                    transformed_robot.bb.size.y = 0.3 # TODO better size estimation
+                    transformed_robot.bb.size.z = 0.5 # TODO better size estimation
                     robots.robots.append(transformed_robot)
                 except NoIntersectionError:
                     self.get_logger().warn(

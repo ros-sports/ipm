@@ -86,7 +86,7 @@ class SoccerIPM(Node):
             cam_info_counter += 1
             if cam_info_counter > 100:
                 self.get_logger().error(
-                    ": Camera Info not received on topic " + self.camera_info_topic + "",
+                    ": Camera Info not received on topic " + camera_info_topic + "",
                     throttle_duration_sec=5)
             if not rclpy.ok():
                 return

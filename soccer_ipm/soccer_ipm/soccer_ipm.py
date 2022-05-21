@@ -18,8 +18,8 @@ from rclpy.duration import Duration
 from rclpy.time import Time
 from rclpy.executors import MultiThreadedExecutor
 
-from soccer_vision_2d_msgs.msg import BallArray, FieldBoundary, Goalpost, GoalpostArray, Robot, RobotArray, MarkingArray, MarkingSegment
-from humanoid_league_msgs.msg import PoseWithCertaintyArray, PoseWithCertainty, ObstacleRelativeArray, ObstacleRelative
+from soccer_vision_2d_msgs.msg import BallArray, FieldBoundary, GoalpostArray, RobotArray
+import soccer_vision_3d_msgs.msg as sv3dm
 from geometry_msgs.msg import Point, PolygonStamped
 
 
@@ -100,10 +100,10 @@ class SoccerIPM(Node):
             self.get_logger().error("Could not get transformation from " + self._base_footprint_frame +
                          "to " + self.ipm.get_camera_info().header.frame_id)
 
-        self.balls_relative_pub = self.create_publisher(PoseWithCertaintyArray, "balls_relative", 1)
+        self.balls_relative_pub = self.create_publisher(sv3dm.BallArray, "balls_relative", 1)
         self.line_mask_relative_pc_pub = self.create_publisher(PointCloud2, "line_mask_relative_pc", 1)
-        self.goalposts_relative = self.create_publisher(PoseWithCertaintyArray, "goal_posts_relative", 1)
-        self.robots_relative_pub = self.create_publisher(ObstacleRelativeArray, "obstacles_relative", 1)
+        self.goalposts_relative = self.create_publisher(sv3dm.GoalpostArray, "goal_posts_relative", 1)
+        self.robots_relative_pub = self.create_publisher(sv3dm.RobotArray, "robots_relative", 1)
         self.field_boundary_pub = self.create_publisher(PolygonStamped, "field_boundary_relative", 1)
 
         # Subscribe to image space data topics
@@ -135,7 +135,7 @@ class SoccerIPM(Node):
     def callback_ball(self, msg: BallArray):
         field = self.get_field(msg.header.stamp, self._ball_height)
 
-        balls_relative = PoseWithCertaintyArray()
+        balls_relative = sv3dm.BallArray()
         balls_relative.header.stamp = msg.header.stamp
         balls_relative.header.frame_id = self._base_footprint_frame
 
@@ -153,10 +153,10 @@ class SoccerIPM(Node):
                     ball_point,
                     output_frame=self._base_footprint_frame)
 
-                ball_relative = PoseWithCertainty()
-                ball_relative.pose.pose.position = transformed_ball.point
-                ball_relative.confidence = ball.confidence.confidence
-                balls_relative.poses.append(ball_relative)
+                ball_relative = sv3dm.B all()
+                ball_relative.center = transformed_ball.point
+                ball_relative.confidence = ball.confidence
+                balls_relative.balls.append(ball_relative)
             except NoIntersectionError:
                 self.get_logger().warn(
                     "Got a ball at ({},{}) I could not transform.".format(
@@ -170,7 +170,7 @@ class SoccerIPM(Node):
         field = self.get_field(msg.header.stamp)
 
         # Create new message
-        goalposts_relative_msg = PoseWithCertaintyArray()
+        goalposts_relative_msg = sv3dm.GoalpostArray()
         goalposts_relative_msg.header.stamp = msg.header.stamp
         goalposts_relative_msg.header.frame_id = self._base_footprint_frame
 
@@ -192,10 +192,13 @@ class SoccerIPM(Node):
                         footpoint,
                         output_frame=self._base_footprint_frame)
 
-                    post_relative = PoseWithCertainty()
-                    post_relative.pose.pose.position = relative_foot_point.point
-                    post_relative.confidence = goal_post_in_image.confidence.confidence
-                    goalposts_relative_msg.poses.append(post_relative)
+                    post_relative = sv3dm.Goalpost()
+                    post_relative.attributes = goal_post_in_image.attributes
+                    post_relative.bb.center.position = relative_foot_point.point
+                    post_relative.bb.size.x = 0.3 # TODO better size estimation
+                    post_relative.bb.size.x = 0.3 # TODO better size estimation
+                    post_relative.confidence = goal_post_in_image.confidence
+                    goalposts_relative_msg.posts.append(post_relative)
                 except NoIntersectionError:
                     self.get_logger().warn(
                         "Got a post with foot point ({},{}) I could not transform.".format(
@@ -208,9 +211,9 @@ class SoccerIPM(Node):
     def callback_robots(self, msg: RobotArray):
         field = self.get_field(msg.header.stamp, 0.0)
 
-        obstacles = ObstacleRelativeArray()
-        obstacles.header.stamp = msg.header.stamp
-        obstacles.header.frame_id = self._base_footprint_frame
+        robots = sv3dm.RobotArray()
+        robots.header.stamp = msg.header.stamp
+        robots.header.frame_id = self._base_footprint_frame
 
         for robot in msg.robots:
 
@@ -218,7 +221,7 @@ class SoccerIPM(Node):
             if not self._object_at_bottom_of_image(
                     self._bb_footpoint(robot.bb).y,
                     self._goalpost_footpoint_out_of_image_threshold):
-                # Create footpoint  
+                # Create footpoint
                 footpoint = PointStamped(
                     header=msg.header,
                     point=self._bb_footpoint(robot.bb)
@@ -230,11 +233,13 @@ class SoccerIPM(Node):
                         footpoint,
                         output_frame=self._base_footprint_frame)
 
-                    obstacle = ObstacleRelative()
-                    obstacle.pose.confidence = robot.confidence.confidence
-                    obstacle.type = robot.attributes.team
-                    obstacle.pose.pose.pose.position = relative_foot_point.point
-                    obstacles.obstacles.append(obstacle)
+                    transformed_robot = sv3dm.Robot()
+                    transformed_robot.attributes = robot.attributes
+                    transformed_robot.confidence = robot.confidence
+                    transformed_robot.bb.center.position = relative_foot_point.point
+                    transformed_robot.bb.size.x = 0.3 # TODO better size estimation
+                    transformed_robot.bb.size.x = 0.3 # TODO better size estimation
+                    robots.robots.append(transformed_robot)
                 except NoIntersectionError:
                     self.get_logger().warn(
                         "Got a robot with foot point ({},{}) I could not transform.".format(
@@ -242,14 +247,15 @@ class SoccerIPM(Node):
                             footpoint.point.y),
                         throttle_duration_sec=5)
 
-        self.robots_relative_pub.publish(obstacles)
+        self.robots_relative_pub.publish(robots)
 
     def callback_field_boundary(self, msg: FieldBoundary):
         field = self.get_field(msg.header.stamp, 0.0)
 
-        field_boundary = PolygonStamped()
+        field_boundary = sv3dm.FieldBoundary()
         field_boundary.header = msg.header
         field_boundary.header.frame_id = self._base_footprint_frame
+        field_boundary.confidence = field_boundary.confidence
 
         for p in msg.points:
             image_point = PointStamped(
@@ -265,7 +271,7 @@ class SoccerIPM(Node):
                     image_point,
                     output_frame=self._base_footprint_frame)
 
-                field_boundary.polygon.points.append(relative_foot_point.point)
+                field_boundary.points.append(relative_foot_point.point)
             except NoIntersectionError:
                 self.get_logger().warn(
                     "Got a field boundary point ({},{}) I could not transform.".format(

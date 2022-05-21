@@ -133,7 +133,7 @@ class IPM:
             'Plane and Point need to have the same time stamp'
         assert self.camera_info_received(), 'No camera info set'
         assert self._camera_info.header.frame_id == points_header.frame_id, \
-            'Points need to be in frame described in the camera info message'
+            'Points need to be in the frame described in the camera info message'
 
         if not np.any(plane_msg.plane.coef[:3]):
             raise InvalidPlaneException

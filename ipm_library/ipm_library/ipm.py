@@ -16,7 +16,7 @@ from typing import Optional
 
 from ipm_library import utils
 from ipm_library.exceptions import NoIntersectionError
-from ipm_msgs.msg import PlaneStamped
+from ipm_msgs.msg import PlaneStamped, Point2DStamped
 import numpy as np
 from sensor_msgs.msg import CameraInfo
 from std_msgs.msg import Header
@@ -63,10 +63,10 @@ class IPM:
     def project_point(
             self,
             plane: PlaneStamped,
-            point: PointStamped,
+            point: Point2DStamped,
             output_frame: Optional[str] = None) -> PointStamped:
         """
-        Projects a `PointStamped` onto a given plane using the latest CameraInfo intrinsics.
+        Projects a `Point2DStamped` onto a given plane using the latest CameraInfo intrinsics.
 
         :param plane: Plane in which the projection should happen
         :param point: Point that should be projected
@@ -76,7 +76,7 @@ class IPM:
         # Convert point to numpy and utilize numpy projection function
         np_point = self.project_points(
             plane,
-            np.array([[point.point.x, point.point.y, point.point.z]]),
+            np.array([[point.point.x, point.point.y]]),
             point.header,
             output_frame=None)[0]
 
@@ -110,7 +110,7 @@ class IPM:
 
         :param plane_msg: Plane in which the projection should happen
         :param points: Points that should be projected in the form of
-            a nx3 numpy array where n is the number of points
+            a nx2 numpy array where n is the number of points
         :param points_header: Header for the numpy message containing the frame and time stamp
         :param output_frame: TF2 frame in which the output should be provided
         :returns: The points projected onto the given plane in the output frame

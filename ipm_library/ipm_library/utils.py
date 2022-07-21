@@ -103,7 +103,7 @@ def get_field_intersection_for_pixels(
     """
     Project an NumPy array of points in image space on the given plane.
 
-    :param points: A nx3 array with n being the number of points
+    :param points: A nx2 array with n being the number of points
     :param plane_normal: The normal vector of the projection plane
     :param plane_base_point: The base point of the projection plane
     :param scale: A scaling factor used if e.g. a mask with a lower resolution is transformed
@@ -117,15 +117,16 @@ def get_field_intersection_for_pixels(
     binning_y = max(camera_info.binning_y, 1) / scale
 
     # Create rays
-    points[:, 0] = (points[:, 0] - (camera_projection_matrix[2] /
-                    binning_x)) / (camera_projection_matrix[0] / binning_x)
-    points[:, 1] = (points[:, 1] - (camera_projection_matrix[5] /
-                    binning_y)) / (camera_projection_matrix[4] / binning_y)
-    points[:, 2] = 1
+    ray_directions = np.zeros((points.shape[0], 3))
+    ray_directions[:, 0] = ((points[:, 0] - (camera_projection_matrix[2] / binning_x)) /
+                            (camera_projection_matrix[0] / binning_x))
+    ray_directions[:, 1] = ((points[:, 1] - (camera_projection_matrix[5] / binning_y)) /
+                            (camera_projection_matrix[4] / binning_y))
+    ray_directions[:, 2] = 1
 
     # Calculate ray -> plane intersections
     intersections = line_plane_intersections(
-        plane_normal, plane_base_point, points)
+        plane_normal, plane_base_point, ray_directions)
 
     return intersections
 

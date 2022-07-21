@@ -106,7 +106,7 @@ class IPM:
             points_header: Header,
             output_frame: Optional[str] = None) -> np.ndarray:
         """
-        Projects a `PointStamped` onto a given plane using the latest CameraInfo intrinsics.
+        Projects image points onto a given plane using the latest CameraInfo intrinsics.
 
         :param plane_msg: Plane in which the projection should happen
         :param points: Points that should be projected in the form of

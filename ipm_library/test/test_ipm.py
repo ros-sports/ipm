@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from geometry_msgs.msg import TransformStamped
+from geometry_msgs.msg import Point, TransformStamped
 from ipm_library.exceptions import NoIntersectionError
 from ipm_library.ipm import IPM
 from ipm_msgs.msg import PlaneStamped
@@ -66,24 +66,28 @@ def test_ipm_project_point_no_transform():
     plane.plane.coef[2] = 1.0  # Normal in z direction
     plane.plane.coef[3] = -1.0  # 1 meter distance
     # Create PointStamped with the center pixel of the camera
-    point = PointStamped()
-    point.header = cam.header
-    point.point.x = float(cam.width // cam.binning_x // 2)
-    point.point.y = float(cam.height // cam.binning_y // 2)
+    point_original_x = 100.0  # in pixels
+    point_original_y = 200.0  # in pixels
+    point_original = np.array([[point_original_x], [point_original_y]])
+    point_original_msg = PointStamped(header=cam.header,
+                                      point=Point(x=point_original_x, y=point_original_y))
     # Project points
-    projected_point = ipm.project_point(plane, point)
+    point_projected_msg = ipm.project_point(plane, point_original_msg)
     # Check header
-    assert projected_point.header == cam.header, 'Point header do not match'
-    # Make goal point array, x and y are not exactly 0 because of the camera calibration as
-    # well as an uneven amount of pixels
-    goal_point_array = np.array([-0.0015865, 0.014633, 1])
-    # Convert projected point to array
-    projected_point_array = np.array([
-        projected_point.point.x,
-        projected_point.point.y,
-        projected_point.point.z,
-    ])
-    assert np.allclose(goal_point_array, projected_point_array, rtol=0.0001), \
+    assert point_projected_msg.header == cam.header, 'Point header do not match'
+
+    # Perform projection back into 2D image using projection matrix K to ensure that
+    # it's the same as the original point
+    point_projected_vec = np.array([[point_projected_msg.point.x],
+                                    [point_projected_msg.point.y],
+                                    [point_projected_msg.point.z]], dtype=np.float64)
+    projection_matrix = np.reshape(cam.k, (3, 3))
+    point_reprojected_2d_vec = np.matmul(projection_matrix, point_projected_vec)
+    point_reprojected_2d = point_reprojected_2d_vec[0:2]
+    # Projection doesn't consider the binning, so we need to correct for that
+    point_reprojected_2d[0] = point_reprojected_2d[0] / cam.binning_x
+    point_reprojected_2d[1] = point_reprojected_2d[1] / cam.binning_y
+    assert np.allclose(point_original, point_reprojected_2d, rtol=0.0001), \
         'Projected point differs too much'
 
 

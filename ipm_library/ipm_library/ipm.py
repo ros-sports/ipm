@@ -121,11 +121,11 @@ class IPM:
         assert self._camera_info.header.frame_id == points_header.frame_id, \
             'Points need to be in frame described in the camera info message'
 
-        # Convert plane to normal format
-        plane = utils.transform_to_normal_plane(plane_msg.plane)
+        # Convert plane from general form to point normal form
+        plane = utils.plane_general_to_point_normal(plane_msg.plane)
 
         # View plane from camera frame
-        plane_normal, plane_base_point = utils.transform_plane_to_frame(
+        plane_base_point, plane_normal = utils.transform_plane_to_frame(
             plane=plane,
             input_frame=plane_msg.header.frame_id,
             output_frame=self._camera_info.header.frame_id,

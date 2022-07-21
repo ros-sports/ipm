@@ -23,19 +23,22 @@ from tf2_geometry_msgs import PointStamped
 import tf2_ros
 
 
-def transform_to_normal_plane(plane: Plane) -> Tuple[np.ndarray, np.ndarray]:
+def plane_general_to_point_normal(plane: Plane) -> Tuple[np.ndarray, np.ndarray]:
     """
-    Convert a plane msg to a normal vector and a base point.
+    Convert general plane form to point normal form.
 
-    :param plane: The input plane
-    :returns: A tuple with the normal vector and the base_point
+    :param plane: The input plane in general form
+    :returns: A tuple with the point and normal
     """
     # ax + by + cz + d = 0 where a, b, c are the normal vector
     a, b, c, d = plane.coef
-    normal = np.array([a, b, c])
-    normal = normal / np.linalg.norm(normal)
-    base_point = normal * d
-    return normal, base_point
+    # A perpendicular array to the plane
+    perpendicular = np.array([a, b, c])
+    # Get closest point from (0, 0, 0) to the plane
+    point = perpendicular * -d / np.dot(perpendicular, perpendicular)
+    # A normal vector to the plane
+    normal = perpendicular / np.linalg.norm(perpendicular)
+    return point, normal
 
 
 def transform_plane_to_frame(
@@ -48,14 +51,14 @@ def transform_plane_to_frame(
     """
     Transform a plane from one frame to another.
 
-    :param plane: The planes normal and base point as numpy arrays
+    :param plane: The planes base point and normal vector as numpy arrays
     :param input_frame: Current frame of the plane
     :param output_frame: The desired frame of the plane
     :param stamp: Timestamp which is used to query
         the tf buffer and get the tranform at this moment
     :param buffer: The refrence to the used tf buffer
     :param timeout: An optinal timeout after which an exception is raised
-    :returns: A Tuple containing the planes normal and base point in the
+    :returns: A Tuple containing the planes base point and normal vector in the
          new frame at the provided timestamp
     """
     # Set optinal timeout
@@ -75,23 +78,23 @@ def transform_plane_to_frame(
     field_point = PointStamped()
     field_point.header.frame_id = input_frame
     field_point.header.stamp = stamp
-    field_point.point.x = plane[1][0]
-    field_point.point.y = plane[1][1]
-    field_point.point.z = plane[1][2]
+    field_point.point.x = plane[0][0]
+    field_point.point.y = plane[0][1]
+    field_point.point.z = plane[0][2]
     field_point = buffer.transform(field_point, output_frame, timeout=timeout)
 
-    field_normal = np.array([
-        field_normal.point.x,
-        field_normal.point.y,
-        field_normal.point.z])
     field_point = np.array([
         field_point.point.x,
         field_point.point.y,
         field_point.point.z])
+    field_normal = np.array([
+        field_normal.point.x,
+        field_normal.point.y,
+        field_normal.point.z])
 
     # field normal is a vector! so it stats at field point and goes up in z direction
     field_normal = field_point - field_normal
-    return field_normal, field_point
+    return field_point, field_normal
 
 
 def get_field_intersection_for_pixels(

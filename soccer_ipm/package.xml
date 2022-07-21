@@ -21,7 +21,6 @@
 
   <exec_depend>soccer_vision_2d_msgs</exec_depend>
   <exec_depend>soccer_vision_3d_msgs</exec_depend>
-  <exec_depend>humanoid_league_msgs</exec_depend>
 
 
   <test_depend>ament_copyright</test_depend>

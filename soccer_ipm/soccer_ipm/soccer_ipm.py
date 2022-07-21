@@ -1,26 +1,25 @@
-import cv2
-import rclpy
 import threading
+
+import cv2
+import numpy as np
+import rclpy
+import soccer_vision_3d_msgs.msg as sv3dm
+import tf2_ros as tf2
+from cv_bridge import CvBridge
+from geometry_msgs.msg import Point
 from ipm_library.exceptions import NoIntersectionError
 from ipm_library.ipm import IPM
 from ipm_msgs.msg import PlaneStamped
-import numpy as np
-from std_msgs.msg import Header
-from sensor_msgs.msg import Image, CameraInfo, PointCloud2
-from tf2_geometry_msgs import PointStamped
-from sensor_msgs_py.point_cloud2 import create_cloud_xyz32
-import tf2_ros as tf2
-
-from cv_bridge import CvBridge
-
-from rclpy.node import Node
 from rclpy.duration import Duration
-from rclpy.time import Time
 from rclpy.executors import MultiThreadedExecutor
-
-from soccer_vision_2d_msgs.msg import BallArray, FieldBoundary, GoalpostArray, RobotArray
-import soccer_vision_3d_msgs.msg as sv3dm
-from geometry_msgs.msg import Point, PolygonStamped
+from rclpy.node import Node
+from rclpy.time import Time
+from sensor_msgs.msg import CameraInfo, Image, PointCloud2
+from sensor_msgs_py.point_cloud2 import create_cloud_xyz32
+from soccer_vision_2d_msgs.msg import (BallArray, FieldBoundary, GoalpostArray,
+                                       RobotArray)
+from std_msgs.msg import Header
+from tf2_geometry_msgs import PointStamped
 
 
 class SoccerIPM(Node):

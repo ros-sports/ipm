@@ -9,8 +9,8 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(shape_msgs REQUIRED)
-find_package(vision_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(vision_msgs REQUIRED)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -20,7 +20,7 @@ endif()
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/PlaneStamped.msg"
   "msg/Point2DStamped.msg"
-  DEPENDENCIES std_msgs shape_msgs vision_msgs
+  DEPENDENCIES shape_msgs std_msgs vision_msgs
 )
 
 ament_export_dependencies(rosidl_default_runtime)

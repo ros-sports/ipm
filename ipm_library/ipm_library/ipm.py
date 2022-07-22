@@ -60,23 +60,26 @@ class IPM:
         """
         return self._camera_info is not None
 
-    def project_point(
+    def map_point(
             self,
             plane: PlaneStamped,
             point: Point2DStamped,
             output_frame: Optional[str] = None) -> PointStamped:
         """
-        Projects a `Point2DStamped` onto a given plane using the latest CameraInfo intrinsics.
+        Map `Point2DStamped` to 3D `Point` assuming point lies on given plane.
 
-        :param plane: Plane in which the projection should happen
-        :param point: Point that should be projected
+        Uses latest CameraInfo intrinsics to convert `Point2DStamped` in image coordinates to 3D
+        `Point` in output frame.
+
+        :param plane: Plane in which the mapping should happen
+        :param point: Point that should be mapped
         :param output_frame: TF2 frame in which the output should be provided
         :raise: InvalidPlaneException if the plane is invalid
         :raise: NoIntersectionError if the point is not on the plane
-        :returns: The point projected onto the given plane in the output frame
+        :returns: The point mapped onto the given plane in the output frame
         """
         # Convert point to numpy and utilize numpy projection function
-        np_point = self.project_points(
+        np_point = self.map_points(
             plane,
             np.array([[point.point.x, point.point.y]]),
             point.header,
@@ -101,22 +104,22 @@ class IPM:
 
         return intersection_stamped
 
-    def project_points(
+    def map_points(
             self,
             plane_msg: PlaneStamped,
             points: np.ndarray,
             points_header: Header,
             output_frame: Optional[str] = None) -> np.ndarray:
         """
-        Projects image points onto a given plane using the latest CameraInfo intrinsics.
+        Maps image points onto a given plane using the latest CameraInfo intrinsics.
 
-        :param plane_msg: Plane in which the projection should happen
-        :param points: Points that should be projected in the form of
+        :param plane_msg: Plane in which the mapping should happen
+        :param points: Points that should be mapped in the form of
             a nx2 numpy array where n is the number of points
         :param points_header: Header for the numpy message containing the frame and time stamp
         :param output_frame: TF2 frame in which the output should be provided
         :raise: InvalidPlaneException if the plane is invalid
-        :returns: The points projected onto the given plane in the output frame
+        :returns: The points mapped onto the given plane in the output frame
         """
         assert points_header.stamp == plane_msg.header.stamp, \
             'Plane and Point need to have the same time stamp'

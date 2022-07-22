@@ -44,8 +44,8 @@ def test_ipm_camera_info():
     assert ipm2._camera_info != cam, 'Camera info not updated'
 
 
-def test_ipm_project_point_no_transform():
-    """Project Point2DStamped without doing any tf transforms."""
+def test_ipm_map_point_no_transform():
+    """Map PointStamped without doing any tf transforms."""
     # We need to create a dummy tf buffer
     tf_buffer = tf2.Buffer()
     # Dummy camera info
@@ -71,28 +71,28 @@ def test_ipm_project_point_no_transform():
     point_original = np.array([[point_original_x], [point_original_y]])
     point_original_msg = Point2DStamped(
         header=cam.header, point=Point2D(x=point_original_x, y=point_original_y))
-    # Project points
-    point_projected_msg = ipm.project_point(plane, point_original_msg)
+    # Map points
+    point_mapped_msg = ipm.map_point(plane, point_original_msg)
     # Check header
-    assert point_projected_msg.header == cam.header, 'Point header do not match'
+    assert point_mapped_msg.header == cam.header, 'Point header does not match'
 
     # Perform projection back into 2D image using projection matrix K to ensure that
     # it's the same as the original point
-    point_projected_vec = np.array([[point_projected_msg.point.x],
-                                    [point_projected_msg.point.y],
-                                    [point_projected_msg.point.z]], dtype=np.float64)
+    point_mapped_vec = np.array([[point_mapped_msg.point.x],
+                                    [point_mapped_msg.point.y],
+                                    [point_mapped_msg.point.z]], dtype=np.float64)
     projection_matrix = np.reshape(cam.k, (3, 3))
-    point_reprojected_2d_vec = np.matmul(projection_matrix, point_projected_vec)
-    point_reprojected_2d = point_reprojected_2d_vec[0:2]
+    point_projected_2d_vec = np.matmul(projection_matrix, point_mapped_vec)
+    point_projected_2d = point_projected_2d_vec[0:2]
     # Projection doesn't consider the binning, so we need to correct for that
-    point_reprojected_2d[0] = point_reprojected_2d[0] / cam.binning_x
-    point_reprojected_2d[1] = point_reprojected_2d[1] / cam.binning_y
-    assert np.allclose(point_original, point_reprojected_2d, rtol=0.0001), \
-        'Projected point differs too much'
+    point_projected_2d[0] = point_projected_2d[0] / cam.binning_x
+    point_projected_2d[1] = point_projected_2d[1] / cam.binning_y
+    assert np.allclose(point_original, point_projected_2d, rtol=0.0001), \
+        'Mapped point differs too much'
 
 
-def test_ipm_project_points_no_transform():
-    """Project points from NumPy array without doing any tf transforms."""
+def test_ipm_map_points_no_transform():
+    """Map points from NumPy array without doing any tf transforms."""
     # We need to create a dummy tf buffer
     tf_buffer = tf2.Buffer()
     # Dummy camera info
@@ -122,8 +122,8 @@ def test_ipm_project_points_no_transform():
          float(cam.height // cam.binning_y), 0],
         [0, 0, 0]
     ])
-    # Project points
-    projected_points = ipm.project_points(plane, points, cam.header)
+    # Map points
+    points_mapped = ipm.map_points(plane, points, cam.header)
     # Make goal points array, x and y are not exactly 0 because of the camera calibration as
     # well as an uneven amount of pixels
     goal_point_array = np.array([
@@ -131,12 +131,12 @@ def test_ipm_project_points_no_transform():
         [0.7633658,  0.588668, 1],
         [-0.7665390, -0.559401, 1]
     ])
-    assert np.allclose(goal_point_array, projected_points, rtol=0.0001), \
-        'Projected point differs too much'
+    assert np.allclose(goal_point_array, points_mapped, rtol=0.0001), \
+        'Mapped point differs too much'
 
 
-def test_ipm_project_point_no_transform_no_intersection():
-    """Impossible projection of Point2DStamped without doing any tf transforms."""
+def test_ipm_map_point_no_transform_no_intersection():
+    """Impossible mapping of Point2DStamped without doing any tf transforms."""
     # We need to create a dummy tf buffer
     tf_buffer = tf2.Buffer()
     # Dummy camera info
@@ -163,12 +163,12 @@ def test_ipm_project_point_no_transform_no_intersection():
     point.point.y = float(cam.height // cam.binning_y // 2)
     # Test if a NoIntersectionError is raised
     with pytest.raises(NoIntersectionError):
-        # Project points
-        ipm.project_point(plane, point)
+        # Map points
+        ipm.map_point(plane, point)
 
 
-def test_ipm_project_points_no_transform_no_intersection():
-    """Impossible projection of points from NumPy array without doing any tf transforms."""
+def test_ipm_map_points_no_transform_no_intersection():
+    """Impossible mapping of points from NumPy array without doing any tf transforms."""
     # We need to create a dummy tf buffer
     tf_buffer = tf2.Buffer()
     # Dummy camera info
@@ -193,21 +193,21 @@ def test_ipm_project_points_no_transform_no_intersection():
         # Corner
         [0, 0, 0]
     ])
-    # Project points
-    projected_points = ipm.project_points(plane, points, cam.header)
+    # Map points
+    points_mapped = ipm.map_points(plane, points, cam.header)
     # Make goal points array, x and y are not exactly 0 because of the camera calibration as
     # well as an uneven amount of pixels
     goal_point_array = np.array([
         [np.nan,  np.nan, np.nan]
     ])
     np.testing.assert_equal(
-        projected_points,
+        points_mapped,
         goal_point_array,
         err_msg='Not all axes are none even tho the plane is invisible')
 
 
-def test_ipm_project_point():
-    """Project Point2DStamped without doing any tf transforms."""
+def test_ipm_map_point():
+    """Map Point2DStamped with tf transforms."""
     # We need to create a dummy tf buffer
     tf_buffer = tf2.Buffer()
     transform = TransformStamped()
@@ -237,26 +237,26 @@ def test_ipm_project_point():
     point.header = cam.header
     point.point.x = float(cam.width // cam.binning_x // 2)
     point.point.y = float(cam.height // cam.binning_y // 2)
-    # Project points
-    projected_point = ipm.project_point(
+    # Map points
+    point_mapped = ipm.map_point(
         plane, point, output_frame=plane.header.frame_id)
     # Check header
-    assert projected_point.header.frame_id == plane.header.frame_id, 'Point header do not match'
+    assert point_mapped.header.frame_id == plane.header.frame_id, 'Point header does not match'
     # Make goal point array, x and y are not exactly 0 because of the camera calibration as
     # well as an uneven amount of pixels
     goal_point_array = np.array([-0.0015865, 0.014633, 0])
-    # Convert projected point to array
-    projected_point_array = np.array([
-        projected_point.point.x,
-        projected_point.point.y,
-        projected_point.point.z,
+    # Convert mapped point to array
+    point_mapped_array = np.array([
+        point_mapped.point.x,
+        point_mapped.point.y,
+        point_mapped.point.z,
     ])
-    assert np.allclose(goal_point_array, projected_point_array, rtol=0.0001), \
-        'Projected point differs too much'
+    assert np.allclose(goal_point_array, point_mapped_array, rtol=0.0001), \
+        'Mapped point differs too much'
 
 
-def test_ipm_project_points():
-    """Project project of points from NumPy array."""
+def test_ipm_map_points():
+    """Map numpy array with tf transforms."""
     # We need to create a dummy tf buffer
     tf_buffer = tf2.Buffer()
     transform = TransformStamped()
@@ -291,8 +291,8 @@ def test_ipm_project_points():
          float(cam.height // cam.binning_y), 0],
         [0, 0, 0]
     ])
-    # Project points
-    projected_points = ipm.project_points(
+    # Map points
+    points_mapped = ipm.map_points(
         plane,
         points=points,
         points_header=cam.header,
@@ -304,8 +304,8 @@ def test_ipm_project_points():
         [0.7633658,  0.588668, 0],
         [-0.7665390, -0.559401, 0]
     ])
-    assert np.allclose(goal_point_array, projected_points, rtol=0.0001), \
-        'Projected point differs too much'
+    assert np.allclose(goal_point_array, points_mapped, rtol=0.0001), \
+        'Mapped point differs too much'
 
 
 def test_project_point_invalid_plane_exception():

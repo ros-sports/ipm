@@ -79,8 +79,8 @@ def test_ipm_map_point_no_transform():
     # Perform projection back into 2D image using projection matrix K to ensure that
     # it's the same as the original point
     point_mapped_vec = np.array([[point_mapped_msg.point.x],
-                                    [point_mapped_msg.point.y],
-                                    [point_mapped_msg.point.z]], dtype=np.float64)
+                                 [point_mapped_msg.point.y],
+                                 [point_mapped_msg.point.z]], dtype=np.float64)
     projection_matrix = np.reshape(cam.k, (3, 3))
     point_projected_2d_vec = np.matmul(projection_matrix, point_mapped_vec)
     point_projected_2d = point_projected_2d_vec[0:2]

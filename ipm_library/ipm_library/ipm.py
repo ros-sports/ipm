@@ -78,7 +78,7 @@ class IPM:
         :raise: NoIntersectionError if the point is not on the plane
         :returns: The point mapped onto the given plane in the output frame
         """
-        # Convert point to numpy and utilize numpy projection function
+        # Create numpy array from point and call map_points()
         np_point = self.map_points(
             plane,
             np.array([[point.point.x, point.point.y]]),

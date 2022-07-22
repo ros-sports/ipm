@@ -111,7 +111,7 @@ class IPM:
             points_header: Header,
             output_frame: Optional[str] = None) -> np.ndarray:
         """
-        Maps image points onto a given plane using the latest CameraInfo intrinsics.
+        Map image points onto a given plane using the latest CameraInfo intrinsics.
 
         :param plane_msg: Plane in which the mapping should happen
         :param points: Points that should be mapped in the form of

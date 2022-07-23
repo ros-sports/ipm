@@ -18,6 +18,7 @@
   <depend>geometry_msgs</depend>
   <depend>bitbots_docs</depend>
   <depend>python3-opencv</depend>
+  <depend>vision_msgs</depend>
 
   <exec_depend>soccer_vision_2d_msgs</exec_depend>
   <exec_depend>soccer_vision_3d_msgs</exec_depend>

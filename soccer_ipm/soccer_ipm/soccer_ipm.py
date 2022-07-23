@@ -9,17 +9,16 @@ from cv_bridge import CvBridge
 from geometry_msgs.msg import Point
 from ipm_library.exceptions import NoIntersectionError
 from ipm_library.ipm import IPM
-from ipm_msgs.msg import PlaneStamped
+from ipm_msgs.msg import PlaneStamped, Point2DStamped
 from rclpy.duration import Duration
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
-from rclpy.time import Time
 from sensor_msgs.msg import CameraInfo, Image, PointCloud2
 from sensor_msgs_py.point_cloud2 import create_cloud_xyz32
 from soccer_vision_2d_msgs.msg import (BallArray, FieldBoundary, GoalpostArray,
                                        RobotArray)
 from std_msgs.msg import Header
-from tf2_geometry_msgs import PointStamped
+from vision_msgs.msg import Point2D
 
 
 class SoccerIPM(Node):
@@ -38,15 +37,15 @@ class SoccerIPM(Node):
         # Declare params
         self.declare_parameter('ball.ball_radius', 0.0)
         self.declare_parameter('goalposts.bar_height', 0.0)
-        self.declare_parameter('base_footprint_frame', "")
+        self.declare_parameter('base_footprint_frame', "base_footprint")
         self.declare_parameter('obstacles.footpoint_out_of_image_threshold', 0.0)
         self.declare_parameter('goalposts.footpoint_out_of_image_threshold', 0.0)
-        self.declare_parameter('camera_info.camera_info_topic', "")
-        self.declare_parameter('ball.ball_topic', "")
-        self.declare_parameter('goalposts.goalposts_topic', "")
-        self.declare_parameter('obstacles.obstacles_topic', "")
-        self.declare_parameter('field_boundary.field_boundary_topic', "")
-        self.declare_parameter('masks.line_mask.topic', "")
+        self.declare_parameter('camera_info.camera_info_topic', "camera_info")
+        self.declare_parameter('ball.ball_topic', "balls_in_image")
+        self.declare_parameter('goalposts.goalposts_topic', "goalposts_in_image")
+        self.declare_parameter('obstacles.obstacles_topic', "obstacles_in_image")
+        self.declare_parameter('field_boundary.field_boundary_topic', "field_boundary_in_image")
+        self.declare_parameter('masks.line_mask.topic', "line_masks_in_image")
         self.declare_parameter('masks.line_mask.scale', 0.0)
 
 
@@ -70,35 +69,6 @@ class SoccerIPM(Node):
         # Subscribe to camera info
         self.create_subscription(CameraInfo, camera_info_topic, self.ipm.set_camera_info, 1)
 
-        # Make executor
-        ex = MultiThreadedExecutor(num_threads=4)
-        ex.add_node(self)
-
-        # Start new thread to spin node and aquire new data.
-        x = threading.Thread(target=ex.spin)
-        x.start()
-
-        # Wait for Camera info
-        cam_info_counter = 0
-        while not self.ipm.camera_info_received():
-            self.get_clock().sleep_for(Duration(seconds=0.1))
-            cam_info_counter += 1
-            if cam_info_counter > 100:
-                self.get_logger().error(
-                    ": Camera Info not received on topic " + camera_info_topic + "",
-                    throttle_duration_sec=5)
-            if not rclpy.ok():
-                return
-
-        # Wait up to 5 seconds for transforms to become available, then print an error and try again
-        # Time(0) gets the most recent transform
-        while not self.tf_buffer.can_transform(self._base_footprint_frame,
-                                                self.ipm.get_camera_info().header.frame_id,
-                                                Time(seconds=0),
-                                                timeout=Duration(seconds=5)):
-            self.get_logger().error("Could not get transformation from " + self._base_footprint_frame +
-                         "to " + self.ipm.get_camera_info().header.frame_id)
-
         self.balls_relative_pub = self.create_publisher(sv3dm.BallArray, "balls_relative", 1)
         self.line_mask_relative_pc_pub = self.create_publisher(PointCloud2, "line_mask_relative_pc", 1)
         self.goalposts_relative = self.create_publisher(sv3dm.GoalpostArray, "goal_posts_relative", 1)
@@ -117,18 +87,12 @@ class SoccerIPM(Node):
                 self.line_mask_relative_pc_pub,
                 scale=line_mask_scaling), 1)
 
-        # Joint spin thread
-        try:
-            x.join()
-        except KeyboardInterrupt:
-            return
-
     def get_field(self, time, heigh_offset=0):
         plane = PlaneStamped()
         plane.header.frame_id = self._base_footprint_frame
         plane.header.stamp = time
         plane.plane.coef[2] = 1.0  # Normal in z direction
-        plane.plane.coef[3] = heigh_offset  # 1 meter distance
+        plane.plane.coef[3] = -heigh_offset  # Distance above the ground
         return plane
 
     def callback_ball(self, msg: BallArray):
@@ -139,12 +103,9 @@ class SoccerIPM(Node):
         balls_relative.header.frame_id = self._base_footprint_frame
 
         for ball in msg.balls:
-            ball_point = PointStamped(
+            ball_point = Point2DStamped(
                 header=msg.header,
-                point=Point(
-                    x=ball.center.x,
-                    y=ball.center.y)
-            )
+                point=ball.center)
 
             try:
                 transformed_ball = self.ipm.project_point(
@@ -180,7 +141,7 @@ class SoccerIPM(Node):
                     self._bb_footpoint(goal_post_in_image.bb).y,
                     self._goalpost_footpoint_out_of_image_threshold):
                 # Create footpoint
-                footpoint = PointStamped(
+                footpoint = Point2DStamped(
                     header=msg.header,
                     point=self._bb_footpoint(goal_post_in_image.bb)
                 )
@@ -222,7 +183,7 @@ class SoccerIPM(Node):
                     self._bb_footpoint(robot.bb).y,
                     self._goalpost_footpoint_out_of_image_threshold):
                 # Create footpoint
-                footpoint = PointStamped(
+                footpoint = Point2DStamped(
                     header=msg.header,
                     point=self._bb_footpoint(robot.bb)
                 )
@@ -259,12 +220,9 @@ class SoccerIPM(Node):
         field_boundary.confidence = field_boundary.confidence
 
         for p in msg.points:
-            image_point = PointStamped(
+            image_point = Point2DStamped(
                 header=msg.header,
-                point=Point(
-                    x=p.x,
-                    y=p.y)
-            )
+                point=p)
             # Project point from image onto field plane
             try:
                 relative_foot_point = self.ipm.project_point(
@@ -336,7 +294,7 @@ class SoccerIPM(Node):
 
     def _bb_footpoint(self, bounding_box) -> Point:
         # TODO rotated bounding boxes
-        return Point(
+        return Point2D(
             x=float(bounding_box.center.position.x),
             y=float(bounding_box.center.position.y + bounding_box.size_y // 2),
         )
@@ -345,5 +303,8 @@ class SoccerIPM(Node):
 def main(args=None):
     rclpy.init(args=args)
     node = SoccerIPM()
+    ex = MultiThreadedExecutor(num_threads=4)
+    ex.add_node(node)
+    ex.spin()
     node.destroy_node()
     rclpy.shutdown()

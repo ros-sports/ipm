@@ -1,4 +1,5 @@
 import glob
+
 from setuptools import setup
 
 package_name = 'soccer_ipm'

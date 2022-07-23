@@ -1,15 +1,10 @@
-import threading
-
 import cv2
-import numpy as np
-import rclpy
-import soccer_vision_3d_msgs.msg as sv3dm
-import tf2_ros as tf2
 from cv_bridge import CvBridge
-from geometry_msgs.msg import Point
 from ipm_library.exceptions import NoIntersectionError
 from ipm_library.ipm import IPM
 from ipm_msgs.msg import PlaneStamped, Point2DStamped
+import numpy as np
+import rclpy
 from rclpy.duration import Duration
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
@@ -17,8 +12,10 @@ from sensor_msgs.msg import CameraInfo, Image, PointCloud2
 from sensor_msgs_py.point_cloud2 import create_cloud_xyz32
 from soccer_vision_2d_msgs.msg import (BallArray, FieldBoundary, GoalpostArray,
                                        RobotArray)
+import soccer_vision_3d_msgs.msg as sv3dm
 from std_msgs.msg import Header
-from vision_msgs.msg import Point2D
+import tf2_ros as tf2
+from vision_msgs.msg import BoundingBox2D, Point2D
 
 
 class SoccerIPM(Node):
@@ -48,43 +45,52 @@ class SoccerIPM(Node):
         self.declare_parameter('masks.line_mask.topic', "line_masks_in_image")
         self.declare_parameter('masks.line_mask.scale', 0.0)
 
-
         # Parameters
-        self._ball_height = self.get_parameter("ball.ball_radius").get_parameter_value().double_value
-        self._bar_height = self.get_parameter("goalposts.bar_height").get_parameter_value().double_value
-        self._base_footprint_frame = self.get_parameter("base_footprint_frame").get_parameter_value().string_value
+        self._ball_height = self.get_parameter("ball.ball_radius").value
+        self._bar_height = self.get_parameter("goalposts.bar_height").value
+        self._base_footprint_frame = self.get_parameter("base_footprint_frame").value
         self._obstacle_footpoint_out_of_image_threshold = \
-            self.get_parameter("obstacles.footpoint_out_of_image_threshold").get_parameter_value().double_value
+            self.get_parameter("obstacles.footpoint_out_of_image_threshold").value
         self._goalpost_footpoint_out_of_image_threshold = \
-            self.get_parameter("goalposts.footpoint_out_of_image_threshold").get_parameter_value().double_value
-        camera_info_topic = self.get_parameter("camera_info.camera_info_topic").get_parameter_value().string_value
-        balls_in_image_topic = self.get_parameter("ball.ball_topic").get_parameter_value().string_value
-        goalposts_in_image_topic = self.get_parameter("goalposts.goalposts_topic").get_parameter_value().string_value
-        obstacles_in_image_topic = self.get_parameter("obstacles.obstacles_topic").get_parameter_value().string_value
-        field_boundary_in_image_topic = self.get_parameter("field_boundary.field_boundary_topic").get_parameter_value().string_value
-        line_mask_in_image_topic = self.get_parameter("masks.line_mask.topic").get_parameter_value().string_value
-        line_mask_scaling = self.get_parameter("masks.line_mask.scale").get_parameter_value().double_value
-
+            self.get_parameter("goalposts.footpoint_out_of_image_threshold").value
+        camera_info_topic = self.get_parameter("camera_info.camera_info_topic").value
+        balls_in_image_topic = self.get_parameter("ball.ball_topic").value
+        goalposts_in_image_topic = self.get_parameter("goalposts.goalposts_topic").value
+        obstacles_in_image_topic = self.get_parameter("obstacles.obstacles_topic").value
+        field_boundary_in_image_topic = \
+            self.get_parameter("field_boundary.field_boundary_topic").value
+        line_mask_in_image_topic = self.get_parameter("masks.line_mask.topic").value
+        line_mask_scaling = self.get_parameter("masks.line_mask.scale").value
 
         # Subscribe to camera info
         self.create_subscription(CameraInfo, camera_info_topic, self.ipm.set_camera_info, 1)
 
-        self.balls_relative_pub = self.create_publisher(sv3dm.BallArray, "balls_relative", 1)
-        self.line_mask_relative_pc_pub = self.create_publisher(PointCloud2, "line_mask_relative_pc", 1)
-        self.goalposts_relative = self.create_publisher(sv3dm.GoalpostArray, "goal_posts_relative", 1)
-        self.robots_relative_pub = self.create_publisher(sv3dm.RobotArray, "robots_relative", 1)
-        self.field_boundary_pub = self.create_publisher(sv3dm.FieldBoundary, "field_boundary_relative", 1)
+        self.balls_pub = self.create_publisher(
+            sv3dm.BallArray, "balls_relative", 1)
+        self.line_mask__pub = self.create_publisher(
+            PointCloud2, "line_mask_relative_pc", 1)
+        self.goalposts_pub = self.create_publisher(
+            sv3dm.GoalpostArray, "goal_posts_relative", 1)
+        self.robots__pub = self.create_publisher(
+            sv3dm.RobotArray, "robots_relative", 1)
+        self.field_boundary_pub = self.create_publisher(
+            sv3dm.FieldBoundary, "field_boundary_relative", 1)
 
         # Subscribe to image space data topics
-        self.create_subscription(BallArray, balls_in_image_topic, self.callback_ball, 1)
-        self.create_subscription(GoalpostArray, goalposts_in_image_topic, self.callback_goalposts, 1)
-        self.create_subscription(RobotArray, obstacles_in_image_topic, self.callback_robots, 1)
-        self.create_subscription(FieldBoundary, field_boundary_in_image_topic,
-                         self.callback_field_boundary, 1)
-        self.create_subscription(Image, line_mask_in_image_topic,
+        self.create_subscription(
+            BallArray, balls_in_image_topic, self.callback_ball, 1)
+        self.create_subscription(
+            GoalpostArray, goalposts_in_image_topic, self.callback_goalposts, 1)
+        self.create_subscription(
+            RobotArray, obstacles_in_image_topic, self.callback_robots, 1)
+        self.create_subscription(
+            FieldBoundary, field_boundary_in_image_topic, self.callback_field_boundary, 1)
+        self.create_subscription(
+            Image,
+            line_mask_in_image_topic,
             lambda msg: self.callback_masks(
                 msg,
-                self.line_mask_relative_pc_pub,
+                self.line_mask__pub,
                 scale=line_mask_scaling), 1)
 
     def get_field(self, time, heigh_offset=0):
@@ -124,7 +130,7 @@ class SoccerIPM(Node):
                         ball.center.y),
                     throttle_duration_sec=5)
 
-        self.balls_relative_pub.publish(balls_relative)
+        self.balls_pub.publish(balls_relative)
 
     def callback_goalposts(self, msg: GoalpostArray):
         field = self.get_field(msg.header.stamp)
@@ -155,9 +161,9 @@ class SoccerIPM(Node):
                     post_relative = sv3dm.Goalpost()
                     post_relative.attributes = goal_post_in_image.attributes
                     post_relative.bb.center.position = relative_foot_point.point
-                    post_relative.bb.size.x = 0.1 # TODO better size estimation
-                    post_relative.bb.size.y = 0.1 # TODO better size estimation
-                    post_relative.bb.size.z = 1.5 # TODO better size estimation
+                    post_relative.bb.size.x = 0.1  # TODO better size estimation
+                    post_relative.bb.size.y = 0.1  # TODO better size estimation
+                    post_relative.bb.size.z = 1.5  # TODO better size estimation
                     post_relative.confidence = goal_post_in_image.confidence
                     goalposts_relative_msg.posts.append(post_relative)
                 except NoIntersectionError:
@@ -167,7 +173,7 @@ class SoccerIPM(Node):
                             footpoint.point.y),
                         throttle_duration_sec=5)
 
-        self.goalposts_relative.publish(goalposts_relative_msg)
+        self.goalposts_pub.publish(goalposts_relative_msg)
 
     def callback_robots(self, msg: RobotArray):
         field = self.get_field(msg.header.stamp, 0.0)
@@ -198,9 +204,9 @@ class SoccerIPM(Node):
                     transformed_robot.attributes = robot.attributes
                     transformed_robot.confidence = robot.confidence
                     transformed_robot.bb.center.position = relative_foot_point.point
-                    transformed_robot.bb.size.x = 0.3 # TODO better size estimation
-                    transformed_robot.bb.size.y = 0.3 # TODO better size estimation
-                    transformed_robot.bb.size.z = 0.5 # TODO better size estimation
+                    transformed_robot.bb.size.x = 0.3   # TODO better size estimation
+                    transformed_robot.bb.size.y = 0.3   # TODO better size estimation
+                    transformed_robot.bb.size.z = 0.5   # TODO better size estimation
                     robots.robots.append(transformed_robot)
                 except NoIntersectionError:
                     self.get_logger().warn(
@@ -209,7 +215,7 @@ class SoccerIPM(Node):
                             footpoint.point.y),
                         throttle_duration_sec=5)
 
-        self.robots_relative_pub.publish(robots)
+        self.robots__pub.publish(robots)
 
     def callback_field_boundary(self, msg: FieldBoundary):
         field = self.get_field(msg.header.stamp, 0.0)
@@ -240,19 +246,24 @@ class SoccerIPM(Node):
 
         self.field_boundary_pub.publish(field_boundary)
 
-    def callback_masks(self, msg: Image, publisher, encoding='8UC1', scale: float = 1.0):   # TODO add publisher type
+    def callback_masks(self, msg: Image, publisher, encoding='8UC1', scale: float = 1.0):
         """
         Projects a mask from the input image as a pointcloud on the field plane.
+
+        :param msg: Mask msg type
+        :param publisher: Publisher which should be used to publish the projected point cloud
+        :param encoding: Encoding of the input mask. For the exact format see the cv_bride docs.
+        :param scale: Downsampling which is applied to the mask before the projection.
         """
         # Get field plane
-        field = self.get_field(msg.header.stamp, 0.0)  # TODO
+        field = self.get_field(msg.header.stamp, 0.0)
         if field is None:
             return
 
         # Convert subsampled image
         image = cv2.resize(
             self._cv_bridge.imgmsg_to_cv2(msg, encoding),
-            (0,0), fx=scale, fy=scale, interpolation=cv2.INTER_NEAREST)
+            (0, 0), fx=scale, fy=scale, interpolation=cv2.INTER_NEAREST)
 
         # Get indices for all non 0 pixels (the pixels which should be displayed in the pointcloud)
         point_idx_tuple = np.where(image != 0)
@@ -282,18 +293,19 @@ class SoccerIPM(Node):
 
     def _object_at_bottom_of_image(self, position, thresh):
         """
-        Checks if the objects y position is at the bottom of the image.
+        Check if the objects y position is at the bottom of the image.
 
         :param position: Y-position of the object
-        :param thresh: Threshold defining the region at the bottom of the image which is counted as 'the bottom' as a fraction of the image height
+        :param thresh: Threshold defining the region at the bottom of the image which is
+            counted as 'the bottom' as a fraction of the image height
         """
-        image_height = self.ipm.get_camera_info().height / max(self.ipm.get_camera_info().binning_y, 1)
+        image_height = self.ipm.get_camera_info().height
+        image_height /= max(self.ipm.get_camera_info().binning_y, 1)
+
         scaled_thresh = thresh * image_height
         return position > scaled_thresh
 
-
-    def _bb_footpoint(self, bounding_box) -> Point:
-        # TODO rotated bounding boxes
+    def _bb_footpoint(self, bounding_box: BoundingBox2D) -> Point2D:  # TODO rotated bb
         return Point2D(
             x=float(bounding_box.center.position.x),
             y=float(bounding_box.center.position.y + bounding_box.size_y // 2),

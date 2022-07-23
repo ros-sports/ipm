@@ -13,18 +13,18 @@
 # limitations under the License.
 
 from typing import List, Optional
+
+from geometry_msgs.msg import TransformStamped
 import numpy as np
 import rclpy
-import soccer_vision_3d_msgs.msg as sv3dm
 from rclpy.node import Node
 from sensor_msgs.msg import CameraInfo
 from soccer_ipm.soccer_ipm import SoccerIPM
 from soccer_vision_2d_msgs.msg import Ball, BallArray
-from tf2_msgs.msg import TFMessage
-from geometry_msgs.msg import TransformStamped
-from std_msgs.msg import Header
+import soccer_vision_3d_msgs.msg as sv3dm
 from soccer_vision_attribute_msgs.msg import Confidence
-
+from std_msgs.msg import Header
+from tf2_msgs.msg import TFMessage
 
 # Dummy CameraInfo Message
 camera_info = CameraInfo(
@@ -36,6 +36,7 @@ camera_info = CameraInfo(
         binning_x=4,
         binning_y=4,
         k=[1338.64532, 0., 1024.0, 0., 1337.89746, 768.0, 0., 0., 1.])
+
 
 def test_ipm_empty_ball():
     # Init ros
@@ -54,6 +55,7 @@ def test_ipm_empty_ball():
 
     # Create a shared reference to the recived message in the local scope
     received_msg: List[Optional[sv3dm.BallArray]] = [None]
+
     # Create a callback with sets this reference
     def callback(msg):
         received_msg[0] = msg
@@ -119,6 +121,7 @@ def test_ipm_ball():
 
     # Create a shared reference to the recived message in the local scope
     received_msg: List[Optional[sv3dm.BallArray]] = [None]
+
     # Create a callback with sets this reference
     def callback(msg):
         received_msg[0] = msg
@@ -177,7 +180,8 @@ def test_ipm_ball():
     # Assert that we recived the correct message
     assert len(received_msg[0].balls) == 1, 'Got too many balls'
     assert received_msg[0].header.stamp == header.stamp, 'Time stamp got changed by the ipm'
-    assert received_msg[0].header.frame_id == 'base_footprint', 'Output frame is not "base_footprint"'
+    assert received_msg[0].header.frame_id == 'base_footprint', \
+        'Output frame is not "base_footprint"'
     ball_relative: sv3dm.Ball = received_msg[0].balls[0]
     np.testing.assert_allclose(
         ball_relative.confidence.confidence,

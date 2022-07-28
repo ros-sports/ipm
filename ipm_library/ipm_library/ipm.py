@@ -54,7 +54,7 @@ class IPM:
 
     def get_camera_info(self):
         """
-        Returns the latest `CameraInfo` message.
+        Return the latest `CameraInfo` message.
 
         :returns: The message.
         """

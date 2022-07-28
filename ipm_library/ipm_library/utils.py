@@ -14,28 +14,31 @@
 
 from typing import Optional, Tuple
 
-import numpy as np
-import tf2_ros
 from geometry_msgs.msg import Transform
+import numpy as np
 from rclpy.duration import Duration
 from sensor_msgs.msg import CameraInfo
 from shape_msgs.msg import Plane
 from tf2_geometry_msgs import PointStamped
+import tf2_ros
 
 
-def transform_to_normal_plane(plane: Plane) -> Tuple[np.ndarray, np.ndarray]:
+def plane_general_to_point_normal(plane: Plane) -> Tuple[np.ndarray, np.ndarray]:
     """
-    Convert a plane msg to a normal vector and a base point.
+    Convert general plane form to point normal form.
 
-    :param plane: The input plane
-    :returns: A tuple with the normal vector and the base_point
+    :param plane: The input plane in general form
+    :returns: A tuple with the point and normal
     """
     # ax + by + cz + d = 0 where a, b, c are the normal vector
     a, b, c, d = plane.coef
-    normal = np.array([a, b, c])
-    normal = normal / np.linalg.norm(normal)
-    base_point = normal * d
-    return normal, base_point
+    # A perpendicular array to the plane
+    perpendicular = np.array([a, b, c])
+    # Get closest point from (0, 0, 0) to the plane
+    point = perpendicular * -d / np.dot(perpendicular, perpendicular)
+    # A normal vector to the plane
+    normal = perpendicular / np.linalg.norm(perpendicular)
+    return point, normal
 
 
 def transform_plane_to_frame(
@@ -46,16 +49,16 @@ def transform_plane_to_frame(
         buffer: tf2_ros.Buffer,
         timeout: Optional[Duration] = None) -> Tuple[np.ndarray, np.ndarray]:
     """
-    Transform a plane fron one frame to another.
+    Transform a plane from one frame to another.
 
-    :param plane: The planes normal and base point as numpy arrays
+    :param plane: The planes base point and normal vector as numpy arrays
     :param input_frame: Current frame of the plane
     :param output_frame: The desired frame of the plane
     :param stamp: Timestamp which is used to query
         the tf buffer and get the tranform at this moment
     :param buffer: The refrence to the used tf buffer
     :param timeout: An optinal timeout after which an exception is raised
-    :returns: A Tuple containing the planes normal and base point in the
+    :returns: A Tuple containing the planes base point and normal vector in the
          new frame at the provided timestamp
     """
     # Set optinal timeout
@@ -75,23 +78,23 @@ def transform_plane_to_frame(
     field_point = PointStamped()
     field_point.header.frame_id = input_frame
     field_point.header.stamp = stamp
-    field_point.point.x = plane[1][0]
-    field_point.point.y = plane[1][1]
-    field_point.point.z = plane[1][2]
+    field_point.point.x = plane[0][0]
+    field_point.point.y = plane[0][1]
+    field_point.point.z = plane[0][2]
     field_point = buffer.transform(field_point, output_frame, timeout=timeout)
 
-    field_normal = np.array([
-        field_normal.point.x,
-        field_normal.point.y,
-        field_normal.point.z])
     field_point = np.array([
         field_point.point.x,
         field_point.point.y,
         field_point.point.z])
+    field_normal = np.array([
+        field_normal.point.x,
+        field_normal.point.y,
+        field_normal.point.z])
 
     # field normal is a vector! so it stats at field point and goes up in z direction
     field_normal = field_point - field_normal
-    return field_normal, field_point
+    return field_point, field_normal
 
 
 def get_field_intersection_for_pixels(
@@ -101,13 +104,13 @@ def get_field_intersection_for_pixels(
         plane_base_point: np.ndarray,
         scale: float = 1.0) -> np.ndarray:
     """
-    Project an NumPy array of points in image space on the given plane.
+    Map a NumPy array of points in image space on the given plane.
 
-    :param points: A nx3 array with n being the number of points
-    :param plane_normal: The normal vektor of the projection plane
-    :param plane_base_point: The base point of the projection plane
+    :param points: A nx2 array with n being the number of points
+    :param plane_normal: The normal vector of the mapping plane
+    :param plane_base_point: The base point of the mapping plane
     :param scale: A scaling factor used if e.g. a mask with a lower resolution is transformed
-    :returns: A NumPy array containing the projected points
+    :returns: A NumPy array containing the mapped points
         in 3d relative to the camera optical frame
     """
     camera_projection_matrix = camera_info.k
@@ -117,15 +120,16 @@ def get_field_intersection_for_pixels(
     binning_y = max(camera_info.binning_y, 1) / scale
 
     # Create rays
-    points[:, 0] = (points[:, 0] - (camera_projection_matrix[2] /
-                    binning_x)) / (camera_projection_matrix[0] / binning_x)
-    points[:, 1] = (points[:, 1] - (camera_projection_matrix[5] /
-                    binning_y)) / (camera_projection_matrix[4] / binning_y)
-    points[:, 2] = 1
+    ray_directions = np.zeros((points.shape[0], 3))
+    ray_directions[:, 0] = ((points[:, 0] - (camera_projection_matrix[2] / binning_x)) /
+                            (camera_projection_matrix[0] / binning_x))
+    ray_directions[:, 1] = ((points[:, 1] - (camera_projection_matrix[5] / binning_y)) /
+                            (camera_projection_matrix[4] / binning_y))
+    ray_directions[:, 2] = 1
 
     # Calculate ray -> plane intersections
     intersections = line_plane_intersections(
-        plane_normal, plane_base_point, points)
+        plane_normal, plane_base_point, ray_directions)
 
     return intersections
 
@@ -137,8 +141,8 @@ def line_plane_intersections(
     """
     Calculate the intersections of rays with a plane described by a normal and a point.
 
-    :param plane_normal: The normal vektor of the projection plane
-    :param plane_base_point: The base point of the projection plane
+    :param plane_normal: The normal vector of the mapping plane
+    :param plane_base_point: The base point of the mapping plane
     :param ray_directions: A nx3 array with n being the number of rays
     :returns: A nx3 array containing the 3d intersection points with n being the number of rays.
     """

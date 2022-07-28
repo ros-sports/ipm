@@ -309,12 +309,14 @@ def test_ipm_project_points():
 
 
 def test_project_point_invalid_plane_exception():
+    """Check InvalidPlaneException is raised if a plane is invalid, i.e. a=b=c=0."""
     ipm = IPM(tf2.Buffer(), CameraInfo())
     with pytest.raises(InvalidPlaneException):
         ipm.project_point(PlaneStamped(), Point2DStamped())
 
 
 def test_project_points_invalid_plane_exception():
+    """Check InvalidPlaneException is raised if a plane is invalid, i.e. a=b=c=0."""
     ipm = IPM(tf2.Buffer(), CameraInfo())
     with pytest.raises(InvalidPlaneException):
         ipm.project_points(PlaneStamped(), np.array([]), Header())

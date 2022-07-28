@@ -8,7 +8,7 @@
   <license>Apache License 2.0</license>
 
   <depend>geometry_msgs</depend>
-  <depend>ipm_msgs</depend>
+  <depend>ipm_interfaces</depend>
   <depend>python3-numpy</depend>
   <depend>sensor_msgs</depend>
   <depend>shape_msgs</depend>

@@ -13,9 +13,9 @@
 # limitations under the License.
 
 from geometry_msgs.msg import TransformStamped
+from ipm_interfaces.msg import PlaneStamped, Point2DStamped
 from ipm_library.exceptions import NoIntersectionError
 from ipm_library.ipm import IPM
-from ipm_msgs.msg import PlaneStamped, Point2DStamped
 import numpy as np
 import pytest
 from sensor_msgs.msg import CameraInfo

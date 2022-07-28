@@ -14,9 +14,9 @@
 
 from typing import Optional
 
+from ipm_interfaces.msg import PlaneStamped, Point2DStamped
 from ipm_library import utils
 from ipm_library.exceptions import NoIntersectionError
-from ipm_msgs.msg import PlaneStamped, Point2DStamped
 import numpy as np
 from sensor_msgs.msg import CameraInfo
 from std_msgs.msg import Header

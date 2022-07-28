@@ -295,6 +295,7 @@ def test_ipm_map_points():
     points_mapped = ipm.map_points(
         plane,
         points=points,
+        points_header=cam.header,
         output_frame=plane.header.frame_id)
     # Make goal points array, x and y are not exactly 0 because of the camera calibration as
     # well as an uneven amount of pixels

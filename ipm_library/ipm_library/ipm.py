@@ -19,6 +19,7 @@ from ipm_library import utils
 from ipm_library.exceptions import InvalidPlaneException, NoIntersectionError
 import numpy as np
 from sensor_msgs.msg import CameraInfo
+from std_msgs.msg import Header
 from tf2_geometry_msgs import PointStamped
 import tf2_ros
 
@@ -93,7 +94,7 @@ class IPM:
         intersection_stamped.point.x = np_point[0]
         intersection_stamped.point.y = np_point[1]
         intersection_stamped.point.z = np_point[2]
-        intersection_stamped.header.stamp = plane.header.stamp
+        intersection_stamped.header.stamp = point.header.stamp
         intersection_stamped.header.frame_id = self._camera_info.header.frame_id
 
         # Transform output point if output frame if needed
@@ -107,6 +108,7 @@ class IPM:
             self,
             plane_msg: PlaneStamped,
             points: np.ndarray,
+            points_header: Header,
             output_frame: Optional[str] = None) -> np.ndarray:
         """
         Map image points onto a given plane using the latest CameraInfo intrinsics.
@@ -136,7 +138,7 @@ class IPM:
             plane=plane,
             input_frame=plane_msg.header.frame_id,
             output_frame=self._camera_info.header.frame_id,
-            stamp=plane_msg.header.stamp,
+            stamp=points_header.stamp,
             buffer=self._tf_buffer)
 
         # Convert points to float if they aren't allready
@@ -155,7 +157,7 @@ class IPM:
             output_transformation = self._tf_buffer.lookup_transform(
                 output_frame,
                 self._camera_info.header.frame_id,
-                plane_msg.header.stamp)
+                points_header.stamp)
             np_points = utils.transform_points(
                 np_points, output_transformation.transform)
 

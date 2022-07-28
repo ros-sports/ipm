@@ -16,7 +16,7 @@ from typing import Optional
 
 from ipm_interfaces.msg import PlaneStamped, Point2DStamped
 from ipm_library import utils
-from ipm_library.exceptions import NoIntersectionError
+from ipm_library.exceptions import InvalidPlaneException, NoIntersectionError
 import numpy as np
 from sensor_msgs.msg import CameraInfo
 from std_msgs.msg import Header
@@ -71,8 +71,13 @@ class IPM:
         :param plane: Plane in which the projection should happen
         :param point: Point that should be projected
         :param output_frame: TF2 frame in which the output should be provided
+        :raise: InvalidPlaneException if the plane is invalid
+        :raise: NoIntersectionError if the point is not on the plane
         :returns: The point projected onto the given plane in the output frame
         """
+        if plane.plane.coef[0] == 0 and plane.plane.coef[1] == 0 and plane.plane.coef[2] == 0:
+            raise InvalidPlaneException
+
         # Convert point to numpy and utilize numpy projection function
         np_point = self.project_points(
             plane,
@@ -113,6 +118,7 @@ class IPM:
             a nx2 numpy array where n is the number of points
         :param points_header: Header for the numpy message containing the frame and time stamp
         :param output_frame: TF2 frame in which the output should be provided
+        :raise: InvalidPlaneException if the plane is invalid
         :returns: The points projected onto the given plane in the output frame
         """
         assert points_header.stamp == plane_msg.header.stamp, \
@@ -120,6 +126,10 @@ class IPM:
         assert self.camera_info_received(), 'No camera info set'
         assert self._camera_info.header.frame_id == points_header.frame_id, \
             'Points need to be in frame described in the camera info message'
+
+        if plane_msg.plane.coef[0] == 0 and plane_msg.plane.coef[1] == 0 and \
+           plane_msg.plane.coef[2] == 0:
+            raise InvalidPlaneException
 
         # Convert plane from general form to point normal form
         plane = utils.plane_general_to_point_normal(plane_msg.plane)

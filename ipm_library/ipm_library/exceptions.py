@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 class InvalidPlaneException(Exception):
     """Raised if a plane is invalid, i.e. a=b=c=0."""
 

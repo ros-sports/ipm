@@ -114,7 +114,7 @@ class SoccerIPM(Node):
                 point=ball.center)
 
             try:
-                transformed_ball = self.ipm.project_point(
+                transformed_ball = self.ipm.map_point(
                     field,
                     ball_point,
                     output_frame=self._base_footprint_frame)
@@ -151,9 +151,9 @@ class SoccerIPM(Node):
                     header=msg.header,
                     point=self._bb_footpoint(goal_post_in_image.bb)
                 )
-                # Project point from image onto field plane
+                # Map point from image onto field plane
                 try:
-                    relative_foot_point = self.ipm.project_point(
+                    relative_foot_point = self.ipm.map_point(
                         field,
                         footpoint,
                         output_frame=self._base_footprint_frame)
@@ -193,9 +193,9 @@ class SoccerIPM(Node):
                     header=msg.header,
                     point=self._bb_footpoint(robot.bb)
                 )
-                # Project point from image onto field plane
+                # Map point from image onto field plane
                 try:
-                    relative_foot_point = self.ipm.project_point(
+                    relative_foot_point = self.ipm.map_point(
                         field,
                         footpoint,
                         output_frame=self._base_footprint_frame)
@@ -229,9 +229,9 @@ class SoccerIPM(Node):
             image_point = Point2DStamped(
                 header=msg.header,
                 point=p)
-            # Project point from image onto field plane
+            # Map point from image onto field plane
             try:
-                relative_foot_point = self.ipm.project_point(
+                relative_foot_point = self.ipm.map_point(
                     field,
                     image_point,
                     output_frame=self._base_footprint_frame)
@@ -248,12 +248,12 @@ class SoccerIPM(Node):
 
     def callback_masks(self, msg: Image, publisher, encoding='8UC1', scale: float = 1.0):
         """
-        Projects a mask from the input image as a pointcloud on the field plane.
+        Map a mask from the input image as a pointcloud on the field plane.
 
         :param msg: Mask msg type
-        :param publisher: Publisher which should be used to publish the projected point cloud
+        :param publisher: Publisher which should be used to publish the mapped point cloud
         :param encoding: Encoding of the input mask. For the exact format see the cv_bride docs.
-        :param scale: Downsampling which is applied to the mask before the projection.
+        :param scale: Downsampling which is applied to the mask before the mapping.
         """
         # Get field plane
         field = self.get_field(msg.header.stamp, 0.0)
@@ -273,8 +273,8 @@ class SoccerIPM(Node):
         point_idx_array[:, 0] = point_idx_tuple[1] / scale
         point_idx_array[:, 1] = point_idx_tuple[0] / scale
 
-        # Project points
-        points_on_plane = self.ipm.project_points(
+        # Map points
+        points_on_plane = self.ipm.map_points(
                     field,
                     point_idx_array,
                     msg.header,

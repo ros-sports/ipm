@@ -75,9 +75,6 @@ class IPM:
         :raise: NoIntersectionError if the point is not on the plane
         :returns: The point projected onto the given plane in the output frame
         """
-        if plane.plane.coef[0] == 0 and plane.plane.coef[1] == 0 and plane.plane.coef[2] == 0:
-            raise InvalidPlaneException
-
         # Convert point to numpy and utilize numpy projection function
         np_point = self.project_points(
             plane,
@@ -127,8 +124,7 @@ class IPM:
         assert self._camera_info.header.frame_id == points_header.frame_id, \
             'Points need to be in frame described in the camera info message'
 
-        if plane_msg.plane.coef[0] == 0 and plane_msg.plane.coef[1] == 0 and \
-           plane_msg.plane.coef[2] == 0:
+        if not np.any(plane_msg.plane.coef[:3]):
             raise InvalidPlaneException
 
         # Convert plane from general form to point normal form

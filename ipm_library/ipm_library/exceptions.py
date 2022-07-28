@@ -20,6 +20,6 @@ class InvalidPlaneException(Exception):
 
 
 class NoIntersectionError(Exception):
-    """Raised if a point is not able to be projected onto the plane."""
+    """Raised if a point is not able to be mapped onto the plane."""
 
     pass

@@ -65,7 +65,7 @@ def test_ipm_map_point_no_transform():
     plane.header.frame_id = 'camera_optical_frame'
     plane.plane.coef[2] = 1.0  # Normal in z direction
     plane.plane.coef[3] = -1.0  # 1 meter distance
-    # Create Point2DStamped with the center pixel of the camera
+    # Create Point2DStamped to be projected
     point_original_x = 100.0  # in pixels
     point_original_y = 200.0  # in pixels
     point_original = np.array([[point_original_x], [point_original_y]])

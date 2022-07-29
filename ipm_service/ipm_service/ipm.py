@@ -85,7 +85,7 @@ class IPMService(Node):
         Process the service request to map a given point cloud.
 
         Input points are defined in image space.
-        
+
         :param request: Service request
         :param response: Service response instance
         :returns: Filled out service response

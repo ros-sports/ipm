@@ -52,6 +52,13 @@ class IPM:
         """
         self._camera_info = camera_info
 
+    def get_camera_info(self):
+        """
+        Return the latest `CameraInfo` message.
+        :returns: The message.
+        """
+        return self._camera_info
+
     def camera_info_received(self) -> bool:
         """
         Return if `CameraInfo` message has been received.
@@ -98,7 +105,7 @@ class IPM:
         intersection_stamped.header.frame_id = self._camera_info.header.frame_id
 
         # Transform output point if output frame if needed
-        if output_frame is not None:
+        if output_frame not in [None, self._camera_info.header.frame_id]:
             intersection_stamped = self._tf_buffer.transform(
                 intersection_stamped, output_frame)
 
@@ -153,7 +160,7 @@ class IPM:
             plane_base_point)
 
         # Transform output point if output frame if needed
-        if output_frame is not None:
+        if output_frame not in [None, self._camera_info.header.frame_id]:
             output_transformation = self._tf_buffer.lookup_transform(
                 output_frame,
                 self._camera_info.header.frame_id,

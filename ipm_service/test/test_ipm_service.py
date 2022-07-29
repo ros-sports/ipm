@@ -16,10 +16,10 @@ from ipm_interfaces.msg import PlaneStamped, Point2DStamped
 from ipm_interfaces.srv import MapPoint, MapPointCloud2
 from ipm_library.ipm import IPM
 from ipm_service.ipm import IPMService
-# import numpy as np
+import numpy as np
 import rclpy
 from sensor_msgs.msg import CameraInfo
-from sensor_msgs_py.point_cloud2 import create_cloud_xyz32
+from sensor_msgs_py.point_cloud2 import create_cloud, PointField, read_points_numpy
 from shape_msgs.msg import Plane
 from std_msgs.msg import Header
 from tf2_ros import Buffer
@@ -190,9 +190,16 @@ def test_map_point_cloud_invalid_plane():
     camera_info_pub.publish(camera_info)
     rclpy.spin_once(ipm_service_node, timeout_sec=0.1)
 
+    point_cloud = create_cloud(
+        header=Header(),
+        fields=[
+            PointField(name='x', offset=0, datatype=PointField.FLOAT32, count=1),
+            PointField(name='y', offset=4, datatype=PointField.FLOAT32, count=1)],
+        points=[])
+
     client = test_node.create_client(MapPointCloud2, 'map_pointcloud2')
     # Request with the default plane a=b=c=0 should be an invalid plane
-    future = client.call_async(MapPointCloud2.Request(points=create_cloud_xyz32(Header(), [])))
+    future = client.call_async(MapPointCloud2.Request(points=point_cloud))
     rclpy.spin_once(ipm_service_node, timeout_sec=0.1)
 
     rclpy.spin_once(test_node, timeout_sec=0.1)
@@ -203,53 +210,58 @@ def test_map_point_cloud_invalid_plane():
     rclpy.shutdown()
 
 
-def _test_map_point_cloud_no_intersection_error():
-
+def test_map_point_cloud():
     rclpy.init()
     ipm_service_node = IPMService()
     test_node = rclpy.node.Node('test')
 
     camera_info_pub = test_node.create_publisher(CameraInfo, 'camera_info', 10)
-    camera_info = CameraInfo()
+    camera_info = CameraInfo(
+        header=Header(frame_id="camera_optical_frame"),
+        width=2048,
+        height=1536,
+        binning_x=4,
+        binning_y=4,
+        k=[1338.64532, 0., 1026.12387, 0., 1337.89746, 748.42213, 0., 0., 1.])
     camera_info_pub.publish(camera_info)
     rclpy.spin_once(ipm_service_node, timeout_sec=0.1)
 
+    # Create input point cloud
+    points = np.arange(100).reshape(-1, 2)
+    point_cloud = create_cloud(
+        header=Header(frame_id="camera_optical_frame"),
+        fields=[
+            PointField(name='x', offset=0, datatype=PointField.FLOAT32, count=1),
+            PointField(name='y', offset=4, datatype=PointField.FLOAT32, count=1)],
+        points=points)
+
+    # XY-plane at z = 1.0
+    # Create Plane in the same frame as our camera with 1m distance facing the camera
+    plane = PlaneStamped()
+    plane.header.frame_id = "camera_optical_frame"
+    plane.plane.coef[2] = 1.0  # Normal in z direction
+    plane.plane.coef[3] = -1.0  # 1 meter distance
+
     client = test_node.create_client(MapPointCloud2, 'map_pointcloud2')
-    req = MapPointCloud2.Request(
-        points=create_cloud_xyz32(Header(), [[0, 0, 0]]),
-        plane=PlaneStamped(plane=Plane(coef=[0, 0, 1, 1])))
+    req = MapPointCloud2.Request(points=point_cloud, plane=plane)
     future = client.call_async(req)
     rclpy.spin_once(ipm_service_node, timeout_sec=0.1)
 
     rclpy.spin_once(test_node, timeout_sec=0.1)
 
     assert future.result() is not None
-    print(future.result().points)
-    assert future.result().result == MapPointCloud2.Response.RESULT_NO_INTERSECTION
+    assert future.result().result == MapPointCloud2.Response.RESULT_SUCCESS
+
+    ipm = IPM(Buffer(), camera_info)
+    expected_points = ipm.map_points(
+        plane, points, point_cloud.header)
+
+    print(read_points_numpy(future.result().points))
+    print("---------")
+    print(expected_points)
+    np.testing.assert_allclose(
+        read_points_numpy(future.result().points),
+        expected_points,
+        rtol=1e-06)
 
     rclpy.shutdown()
-
-
-def test_map_point_cloud():
-    pass
-
-#     rclpy.init()
-#     ipm_service_node = IPMService()
-#     test_node = rclpy.node.Node('test')
-
-#     camera_info_pub = test_node.create_publisher(CameraInfo, 'camera_info', 10)
-#     camera_info_pub.publish(CameraInfo())
-#     rclpy.spin_once(ipm_service_node, timeout_sec=0.1)
-
-#     client = test_node.create_client(MapPointCloud2, 'map_pointcloud2')
-#     req = MapPointCloud2.Request()
-#     req.points = create_cloud_xyz32(Header(), [])
-#     future = client.call_async(req)
-#     rclpy.spin_once(ipm_service_node, timeout_sec=0.1)
-
-#     rclpy.spin_once(test_node, timeout_sec=0.1)
-
-#     assert future.result() is not None
-#     assert future.result().result == MapPoint.Response.RESULT_SUCCESS
-
-#     rclpy.shutdown()

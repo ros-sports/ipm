@@ -84,6 +84,8 @@ class IPMService(Node):
         """
         Process the service request to map a given point cloud.
 
+        Input points are defined in image space.
+        
         :param request: Service request
         :param response: Service response instance
         :returns: Filled out service response
@@ -115,8 +117,6 @@ class IPMService(Node):
                 mapped_points)
 
             response.result = MapPointCloud2.Response.RESULT_SUCCESS
-        except NoIntersectionError:
-            response.result = MapPointCloud2.Response.RESULT_NO_INTERSECTION
         except InvalidPlaneException:
             response.result = MapPointCloud2.Response.RESULT_INVALID_PLANE
 

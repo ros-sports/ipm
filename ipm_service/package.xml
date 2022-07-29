@@ -8,6 +8,7 @@
 
   <depend>ipm_interfaces</depend>
   <depend>ipm_library</depend>
+  <depend>python3-numpy</depend>
   <depend>rclpy</depend>
   <depend>sensor_msgs</depend>
 

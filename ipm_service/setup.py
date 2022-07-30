@@ -22,6 +22,9 @@ setup(
         'setuptools',
     ],
     zip_safe=True,
+    maintainer='Florian Vahl',
+    maintainer_email='git@flova.de',
+    description='A ROS2 Inverse Perspective Mapping Service',
     keywords=['ROS'],
     license='Apache License 2.0',
     entry_points={

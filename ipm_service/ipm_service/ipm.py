@@ -28,7 +28,7 @@ import tf2_ros as tf2
 class IPMService(Node):
     def __init__(self) -> None:
         super().__init__("ipm_service")
-        # TF handeling
+        # TF handling
         self.tf_buffer = tf2.Buffer(Duration(seconds=5))
         self.tf_listener = tf2.TransformListener(self.tf_buffer, self)
         # Create ipm library instance

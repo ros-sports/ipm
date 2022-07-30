@@ -27,6 +27,7 @@ setup(
     description='A ROS2 Inverse Perspective Mapping Service',
     keywords=['ROS'],
     license='Apache License 2.0',
+    tests_require=['pytest'],
     entry_points={
         'console_scripts': [
             'ipm_service = ipm_service.ipm:main',

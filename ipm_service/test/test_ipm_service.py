@@ -86,7 +86,6 @@ def test_map_point_invalid_plane():
     rclpy.spin_once(test_node, timeout_sec=0.1)
 
     assert future.result() is not None
-    print(future.result())
     assert future.result().result == MapPoint.Response.RESULT_INVALID_PLANE
 
     rclpy.shutdown()
@@ -256,9 +255,6 @@ def test_map_point_cloud():
     expected_points = ipm.map_points(
         plane, points, point_cloud.header)
 
-    print(read_points_numpy(future.result().points))
-    print("---------")
-    print(expected_points)
     np.testing.assert_allclose(
         read_points_numpy(future.result().points),
         expected_points,

@@ -4,7 +4,7 @@
   <version>0.0.0</version>
   <description>A ROS2 Inverse Perspective Mapping Service</description>
   <maintainer email="git@flova.de">Florian Vahl</maintainer>
-  <license>MIT</license>
+  <license>Apache License 2.0</license>
 
   <depend>ipm_interfaces</depend>
   <depend>ipm_library</depend>

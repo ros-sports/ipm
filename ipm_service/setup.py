@@ -22,7 +22,7 @@ setup(
     ],
     zip_safe=True,
     keywords=['ROS'],
-    license='MIT',
+    license='Apache License 2.0',
     entry_points={
         'console_scripts': [
             'ipm_service = ipm_service.ipm:main',

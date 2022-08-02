@@ -26,6 +26,7 @@ import tf2_ros as tf2
 
 
 class IPMService(Node):
+
     def __init__(self) -> None:
         super().__init__('ipm_service')
         # TF handling

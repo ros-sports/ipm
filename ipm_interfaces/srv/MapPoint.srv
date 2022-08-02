@@ -9,5 +9,5 @@ uint8 RESULT_INVALID_PLANE=2
 uint8 RESULT_NO_INTERSECTION=3
 
 # Returned point is only valid if result equals RESULT_SUCCESS
-geometry_msgs/Point point
+geometry_msgs/PointStamped point
 uint8 result

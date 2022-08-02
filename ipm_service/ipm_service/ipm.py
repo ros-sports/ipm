@@ -27,7 +27,7 @@ import tf2_ros as tf2
 
 class IPMService(Node):
     def __init__(self) -> None:
-        super().__init__("ipm_service")
+        super().__init__('ipm_service')
         # TF handling
         self.tf_buffer = tf2.Buffer(Duration(seconds=5))
         self.tf_listener = tf2.TransformListener(self.tf_buffer, self)
@@ -58,8 +58,8 @@ class IPMService(Node):
             response.result = MapPoint.Response.RESULT_NO_CAMERA_INFO
             return response
 
-        # Map optional marking from "" to None
-        if request.output_frame.data == "":
+        # Map optional marking from '' to None
+        if request.output_frame.data == '':
             output_frame = None
         else:
             output_frame = request.output_frame.data
@@ -95,8 +95,8 @@ class IPMService(Node):
             response.result = MapPointCloud2.Response.RESULT_NO_CAMERA_INFO
             return response
 
-        # Map optional marking from "" to None
-        if request.output_frame.data == "":
+        # Map optional marking from '' to None
+        if request.output_frame.data == '':
             output_frame = self.ipm.get_camera_info().header.frame_id
         else:
             output_frame = request.output_frame.data

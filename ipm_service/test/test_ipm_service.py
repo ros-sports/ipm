@@ -123,7 +123,7 @@ def test_map_point():
 
     camera_info_pub = test_node.create_publisher(CameraInfo, 'camera_info', 10)
     camera_info = CameraInfo(
-        header=Header(frame_id="camera_optical_frame"),
+        header=Header(frame_id='camera_optical_frame'),
         width=2048,
         height=1536,
         binning_x=4,
@@ -133,13 +133,13 @@ def test_map_point():
     rclpy.spin_once(ipm_service_node, timeout_sec=0.1)
 
     point = Point2DStamped(
-        header=Header(frame_id="camera_optical_frame"),
+        header=Header(frame_id='camera_optical_frame'),
         point=Point2D(x=100.0, y=100.0))
 
     # XY-plane at z = 1.0
     # Create Plane in the same frame as our camera with 1m distance facing the camera
     plane = PlaneStamped()
-    plane.header.frame_id = "camera_optical_frame"
+    plane.header.frame_id = 'camera_optical_frame'
     plane.plane.coef[2] = 1.0  # Normal in z direction
     plane.plane.coef[3] = -1.0  # 1 meter distance
 
@@ -216,7 +216,7 @@ def test_map_point_cloud():
 
     camera_info_pub = test_node.create_publisher(CameraInfo, 'camera_info', 10)
     camera_info = CameraInfo(
-        header=Header(frame_id="camera_optical_frame"),
+        header=Header(frame_id='camera_optical_frame'),
         width=2048,
         height=1536,
         binning_x=4,
@@ -228,7 +228,7 @@ def test_map_point_cloud():
     # Create input point cloud
     points = np.arange(100).reshape(-1, 2)
     point_cloud = create_cloud(
-        header=Header(frame_id="camera_optical_frame"),
+        header=Header(frame_id='camera_optical_frame'),
         fields=[
             PointField(name='x', offset=0, datatype=PointField.FLOAT32, count=1),
             PointField(name='y', offset=4, datatype=PointField.FLOAT32, count=1)],
@@ -237,7 +237,7 @@ def test_map_point_cloud():
     # XY-plane at z = 1.0
     # Create Plane in the same frame as our camera with 1m distance facing the camera
     plane = PlaneStamped()
-    plane.header.frame_id = "camera_optical_frame"
+    plane.header.frame_id = 'camera_optical_frame'
     plane.plane.coef[2] = 1.0  # Normal in z direction
     plane.plane.coef[3] = -1.0  # 1 meter distance
 

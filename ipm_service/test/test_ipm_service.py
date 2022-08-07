@@ -25,6 +25,17 @@ from std_msgs.msg import Header
 from tf2_ros import Buffer
 from vision_msgs.msg import Point2D
 
+# Sample camera info
+camera_info = CameraInfo(
+    header=Header(
+        frame_id='camera_optical_frame',
+    ),
+    width=2048,
+    height=1536,
+    binning_x=4,
+    binning_y=4,
+    k=[1338.64532, 0., 1026.12387, 0., 1337.89746, 748.42213, 0., 0., 1.])
+
 
 def test_topics_and_services():
 
@@ -74,7 +85,6 @@ def test_map_point_invalid_plane():
     test_node = rclpy.node.Node('test')
 
     camera_info_pub = test_node.create_publisher(CameraInfo, 'camera_info', 10)
-    camera_info = CameraInfo()
     camera_info_pub.publish(camera_info)
     rclpy.spin_once(ipm_service_node, timeout_sec=0.1)
 
@@ -98,12 +108,6 @@ def test_map_point_no_intersection_error():
     test_node = rclpy.node.Node('test')
 
     camera_info_pub = test_node.create_publisher(CameraInfo, 'camera_info', 10)
-    camera_info = CameraInfo(
-        width=2048,
-        height=1536,
-        binning_x=4,
-        binning_y=4,
-        k=[1338.64532, 0., 1026.12387, 0., 1337.89746, 748.42213, 0., 0., 1.])
     camera_info_pub.publish(camera_info)
     rclpy.spin_once(ipm_service_node, timeout_sec=0.1)
 
@@ -127,13 +131,6 @@ def test_map_point():
     test_node = rclpy.node.Node('test')
 
     camera_info_pub = test_node.create_publisher(CameraInfo, 'camera_info', 10)
-    camera_info = CameraInfo(
-        header=Header(frame_id='camera_optical_frame'),
-        width=2048,
-        height=1536,
-        binning_x=4,
-        binning_y=4,
-        k=[1338.64532, 0., 1026.12387, 0., 1337.89746, 748.42213, 0., 0., 1.])
     camera_info_pub.publish(camera_info)
     rclpy.spin_once(ipm_service_node, timeout_sec=0.1)
 
@@ -190,7 +187,6 @@ def test_map_point_cloud_invalid_plane():
     test_node = rclpy.node.Node('test')
 
     camera_info_pub = test_node.create_publisher(CameraInfo, 'camera_info', 10)
-    camera_info = CameraInfo()
     camera_info_pub.publish(camera_info)
     rclpy.spin_once(ipm_service_node, timeout_sec=0.1)
 
@@ -220,13 +216,6 @@ def test_map_point_cloud():
     test_node = rclpy.node.Node('test')
 
     camera_info_pub = test_node.create_publisher(CameraInfo, 'camera_info', 10)
-    camera_info = CameraInfo(
-        header=Header(frame_id='camera_optical_frame'),
-        width=2048,
-        height=1536,
-        binning_x=4,
-        binning_y=4,
-        k=[1338.64532, 0., 1026.12387, 0., 1337.89746, 748.42213, 0., 0., 1.])
     camera_info_pub.publish(camera_info)
     rclpy.spin_once(ipm_service_node, timeout_sec=0.1)
 

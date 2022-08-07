@@ -14,7 +14,10 @@
 
 from geometry_msgs.msg import TransformStamped
 from ipm_interfaces.msg import PlaneStamped, Point2DStamped
-from ipm_library.exceptions import InvalidPlaneException, NoIntersectionError
+from ipm_library.exceptions import (
+    CameraInfoNotSetException,
+    InvalidPlaneException,
+    NoIntersectionError)
 from ipm_library.ipm import IPM
 import numpy as np
 import pytest
@@ -320,3 +323,10 @@ def test_map_points_invalid_plane_exception():
     ipm = IPM(tf2.Buffer(), CameraInfo())
     with pytest.raises(InvalidPlaneException):
         ipm.map_points(PlaneStamped(), np.array([]), Header())
+
+
+def test_camera_info_not_set():
+    """Check CameraInfoNotSetException is raised if camera info is not set."""
+    ipm = IPM(tf2.Buffer())
+    with pytest.raises(CameraInfoNotSetException):
+        ipm.map_point(PlaneStamped(), Point2D())

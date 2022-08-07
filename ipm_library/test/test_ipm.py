@@ -26,13 +26,22 @@ from std_msgs.msg import Header
 import tf2_ros as tf2
 from vision_msgs.msg import Point2D
 
+# Sample camera info
+cam = CameraInfo(
+    header=Header(
+        frame_id='camera_optical_frame',
+    ),
+    width=2048,
+    height=1536,
+    binning_x=4,
+    binning_y=4,
+    k=[1338.64532, 0., 1026.12387, 0., 1337.89746, 748.42213, 0., 0., 1.])
+
 
 def test_ipm_camera_info():
     """Test if the camera info is handled correctly."""
     # We need to create a dummy tf buffer
     tf_buffer = tf2.Buffer()
-    # Dummy camera info
-    cam = CameraInfo()
     # Create an IPM
     ipm1 = IPM(tf_buffer, cam)
     assert ipm1.camera_info_received(), 'Failed to set camera info in constructor'
@@ -51,16 +60,6 @@ def test_ipm_map_point_no_transform():
     """Map PointStamped without doing any tf transforms."""
     # We need to create a dummy tf buffer
     tf_buffer = tf2.Buffer()
-    # Dummy camera info
-    cam = CameraInfo(
-        header=Header(
-            frame_id='camera_optical_frame',
-        ),
-        width=2048,
-        height=1536,
-        binning_x=4,
-        binning_y=4,
-        k=[1338.64532, 0., 1026.12387, 0., 1337.89746, 748.42213, 0., 0., 1.])
     # Create an IPM
     ipm = IPM(tf_buffer, cam)
     # Create Plane in the same frame as our camera with 1m distance facing the camera
@@ -98,16 +97,6 @@ def test_ipm_map_points_no_transform():
     """Map points from NumPy array without doing any tf transforms."""
     # We need to create a dummy tf buffer
     tf_buffer = tf2.Buffer()
-    # Dummy camera info
-    cam = CameraInfo(
-        header=Header(
-            frame_id='camera_optical_frame',
-        ),
-        width=2048,
-        height=1536,
-        binning_x=4,
-        binning_y=4,
-        k=[1338.64532, 0., 1026.12387, 0., 1337.89746, 748.42213, 0., 0., 1.])
     # Create an IPM
     ipm = IPM(tf_buffer, cam)
     # Create Plane in the same frame as our camera with 1m distance facing the camera
@@ -142,16 +131,6 @@ def test_ipm_map_point_no_transform_no_intersection():
     """Impossible mapping of Point2DStamped without doing any tf transforms."""
     # We need to create a dummy tf buffer
     tf_buffer = tf2.Buffer()
-    # Dummy camera info
-    cam = CameraInfo(
-        header=Header(
-            frame_id='camera_optical_frame',
-        ),
-        width=2048,
-        height=1536,
-        binning_x=4,
-        binning_y=4,
-        k=[1338.64532, 0., 1026.12387, 0., 1337.89746, 748.42213, 0., 0., 1.])
     # Create an IPM
     ipm = IPM(tf_buffer, cam)
     # Create Plane in the same frame as our camera but 1m behind it
@@ -174,16 +153,6 @@ def test_ipm_map_points_no_transform_no_intersection():
     """Impossible mapping of points from NumPy array without doing any tf transforms."""
     # We need to create a dummy tf buffer
     tf_buffer = tf2.Buffer()
-    # Dummy camera info
-    cam = CameraInfo(
-        header=Header(
-            frame_id='camera_optical_frame',
-        ),
-        width=2048,
-        height=1536,
-        binning_x=4,
-        binning_y=4,
-        k=[1338.64532, 0., 1026.12387, 0., 1337.89746, 748.42213, 0., 0., 1.])
     # Create an IPM
     ipm = IPM(tf_buffer, cam)
     # Create Plane in the same frame as our camera with 1m distance facing the camera
@@ -219,16 +188,6 @@ def test_ipm_map_point():
     transform.transform.rotation.w = 1.0
     transform.transform.translation.z = 1.0
     tf_buffer.set_transform_static(transform, '')
-    # Dummy camera info
-    cam = CameraInfo(
-        header=Header(
-            frame_id='camera_optical_frame',
-        ),
-        width=2048,
-        height=1536,
-        binning_x=4,
-        binning_y=4,
-        k=[1338.64532, 0., 1026.12387, 0., 1337.89746, 748.42213, 0., 0., 1.])
     # Create an IPM
     ipm = IPM(tf_buffer, cam)
     # Create Plane in the same frame as our camera with 1m distance facing the camera
@@ -268,16 +227,6 @@ def test_ipm_map_points():
     transform.transform.rotation.w = 1.0
     transform.transform.translation.z = 1.0
     tf_buffer.set_transform_static(transform, '')
-    # Dummy camera info
-    cam = CameraInfo(
-        header=Header(
-            frame_id='camera_optical_frame',
-        ),
-        width=2048,
-        height=1536,
-        binning_x=4,
-        binning_y=4,
-        k=[1338.64532, 0., 1026.12387, 0., 1337.89746, 748.42213, 0., 0., 1.])
     # Create an IPM
     ipm = IPM(tf_buffer, cam)
     # Create Plane in the same frame as our camera with 1m distance facing the camera

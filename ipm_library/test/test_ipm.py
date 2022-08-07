@@ -262,14 +262,14 @@ def test_ipm_map_points():
 
 def test_map_point_invalid_plane_exception():
     """Check InvalidPlaneException is raised if a plane is invalid, i.e. a=b=c=0."""
-    ipm = IPM(tf2.Buffer(), CameraInfo())
+    ipm = IPM(tf2.Buffer(), cam)
     with pytest.raises(InvalidPlaneException):
         ipm.map_point(PlaneStamped(), Point2DStamped())
 
 
 def test_map_points_invalid_plane_exception():
     """Check InvalidPlaneException is raised if a plane is invalid, i.e. a=b=c=0."""
-    ipm = IPM(tf2.Buffer(), CameraInfo())
+    ipm = IPM(tf2.Buffer(), cam)
     with pytest.raises(InvalidPlaneException):
         ipm.map_points(PlaneStamped(), np.array([]), Header())
 

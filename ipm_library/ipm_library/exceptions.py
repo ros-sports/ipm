@@ -13,6 +13,12 @@
 # limitations under the License.
 
 
+class InvalidCameraInfoException(Exception):
+    """Raised if a CameraInfo is invalid."""
+
+    pass
+
+
 class InvalidPlaneException(Exception):
     """Raised if a plane is invalid, i.e. a=b=c=0."""
 

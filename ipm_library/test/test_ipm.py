@@ -40,7 +40,7 @@ def test_ipm_camera_info():
     ipm2.set_camera_info(cam)
     assert ipm1.camera_info_received(), 'Failed to set camera info'
     # Set another camera info
-    ipm2.set_camera_info(CameraInfo(header=Header(frame_id='test')))
+    ipm2.set_camera_info(CameraInfo(k=[1000.0, 0., 1000.0, 0., 1500.0, 500.0, 0., 0., 1.]))
     assert ipm2._camera_info != cam, 'Camera info not updated'
 
 

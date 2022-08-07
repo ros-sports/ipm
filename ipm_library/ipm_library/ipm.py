@@ -16,7 +16,11 @@ from typing import Optional
 
 from ipm_interfaces.msg import PlaneStamped, Point2DStamped
 from ipm_library import utils
-from ipm_library.exceptions import InvalidPlaneException, NoIntersectionError
+from ipm_library.sanity_camera_info import sanity_check
+from ipm_library.exceptions import (
+    InvalidCameraInfoException,
+    InvalidPlaneException,
+    NoIntersectionError)
 import numpy as np
 from sensor_msgs.msg import CameraInfo
 from std_msgs.msg import Header
@@ -42,14 +46,20 @@ class IPM:
         """
         # TF needs a listener that is init in the node context, so we need a reference
         self._tf_buffer = tf_buffer
-        self.set_camera_info(camera_info)
+        if camera_info:
+            self.set_camera_info(camera_info)
 
     def set_camera_info(self, camera_info: CameraInfo) -> None:
         """
         Set a new `CameraInfo` message.
 
         :param camera_info: The updated camera info message.
+        :raise: InvalidCameraInfoException if the camera info is invalid
         """
+        if sanity_check(camera_info):
+            self._camera_info = camera_info
+        else:
+            raise InvalidCameraInfoException
         self._camera_info = camera_info
 
     def get_camera_info(self):

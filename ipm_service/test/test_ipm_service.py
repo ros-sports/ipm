@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from ipm_interfaces.msg import PlaneStamped, Point2DStamped
+from ipm_interfaces.msg import PlaneStamped
 from ipm_interfaces.srv import MapPoint, MapPointCloud2
 from ipm_library.ipm import IPM
 from ipm_service.ipm import IPMService
@@ -137,9 +137,7 @@ def test_map_point():
     camera_info_pub.publish(camera_info)
     rclpy.spin_once(ipm_service_node, timeout_sec=0.1)
 
-    point = Point2DStamped(
-        header=Header(frame_id='camera_optical_frame'),
-        point=Point2D(x=100.0, y=100.0))
+    point = Point2D(x=100.0, y=100.0)
 
     # XY-plane at z = 1.0
     # Create Plane in the same frame as our camera with 1m distance facing the camera
@@ -257,8 +255,7 @@ def test_map_point_cloud():
     assert future.result().result == MapPointCloud2.Response.RESULT_SUCCESS
 
     ipm = IPM(Buffer(), camera_info)
-    expected_points = ipm.map_points(
-        plane, points, point_cloud.header)
+    expected_points = ipm.map_points(plane, points)
 
     np.testing.assert_allclose(
         read_points_numpy(future.result().points),

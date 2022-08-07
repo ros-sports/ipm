@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from geometry_msgs.msg import TransformStamped
-from ipm_interfaces.msg import PlaneStamped, Point2DStamped
+from ipm_interfaces.msg import PlaneStamped
 from ipm_library.exceptions import InvalidPlaneException, NoIntersectionError
 from ipm_library.ipm import IPM
 import numpy as np
@@ -65,12 +65,11 @@ def test_ipm_map_point_no_transform():
     plane.header.frame_id = 'camera_optical_frame'
     plane.plane.coef[2] = 1.0  # Normal in z direction
     plane.plane.coef[3] = -1.0  # 1 meter distance
-    # Create Point2DStamped to be projected
+    # Create Point2D to be projected
     point_original_x = 100.0  # in pixels
     point_original_y = 200.0  # in pixels
     point_original = np.array([[point_original_x], [point_original_y]])
-    point_original_msg = Point2DStamped(
-        header=cam.header, point=Point2D(x=point_original_x, y=point_original_y))
+    point_original_msg = Point2D(x=point_original_x, y=point_original_y)
     # Map points
     point_mapped_msg = ipm.map_point(plane, point_original_msg)
     # Check header
@@ -123,7 +122,7 @@ def test_ipm_map_points_no_transform():
         [0, 0, 0]
     ])
     # Map points
-    points_mapped = ipm.map_points(plane, points, cam.header)
+    points_mapped = ipm.map_points(plane, points)
     # Make goal points array, x and y are not exactly 0 because of the camera calibration as
     # well as an uneven amount of pixels
     goal_point_array = np.array([
@@ -136,7 +135,7 @@ def test_ipm_map_points_no_transform():
 
 
 def test_ipm_map_point_no_transform_no_intersection():
-    """Impossible mapping of Point2DStamped without doing any tf transforms."""
+    """Impossible mapping of Point2D without doing any tf transforms."""
     # We need to create a dummy tf buffer
     tf_buffer = tf2.Buffer()
     # Dummy camera info
@@ -156,11 +155,10 @@ def test_ipm_map_point_no_transform_no_intersection():
     plane.header.frame_id = 'camera_optical_frame'
     plane.plane.coef[2] = 1.0  # Normal in z direction
     plane.plane.coef[3] = 1.0  # 1 meter distance
-    # Create Point2DStamped with the center pixel of the camera
-    point = Point2DStamped()
-    point.header = cam.header
-    point.point.x = float(cam.width // cam.binning_x // 2)
-    point.point.y = float(cam.height // cam.binning_y // 2)
+    # Create Point2D with the center pixel of the camera
+    point = Point2D()
+    point.x = float(cam.width // cam.binning_x // 2)
+    point.y = float(cam.height // cam.binning_y // 2)
     # Test if a NoIntersectionError is raised
     with pytest.raises(NoIntersectionError):
         # Map points
@@ -194,7 +192,7 @@ def test_ipm_map_points_no_transform_no_intersection():
         [0, 0, 0]
     ])
     # Map points
-    points_mapped = ipm.map_points(plane, points, cam.header)
+    points_mapped = ipm.map_points(plane, points)
     # Make goal points array, x and y are not exactly 0 because of the camera calibration as
     # well as an uneven amount of pixels
     goal_point_array = np.array([
@@ -207,7 +205,7 @@ def test_ipm_map_points_no_transform_no_intersection():
 
 
 def test_ipm_map_point():
-    """Map Point2DStamped with tf transforms."""
+    """Map Point2D with tf transforms."""
     # We need to create a dummy tf buffer
     tf_buffer = tf2.Buffer()
     transform = TransformStamped()
@@ -232,11 +230,10 @@ def test_ipm_map_point():
     plane = PlaneStamped()
     plane.header.frame_id = 'base_footprint'
     plane.plane.coef[2] = 1.0  # Normal in z direction
-    # Create Point2DStamped with the center pixel of the camera
-    point = Point2DStamped()
-    point.header = cam.header
-    point.point.x = float(cam.width // cam.binning_x // 2)
-    point.point.y = float(cam.height // cam.binning_y // 2)
+    # Create Point2D with the center pixel of the camera
+    point = Point2D()
+    point.x = float(cam.width // cam.binning_x // 2)
+    point.y = float(cam.height // cam.binning_y // 2)
     # Map points
     point_mapped = ipm.map_point(
         plane, point, output_frame=plane.header.frame_id)
@@ -295,7 +292,6 @@ def test_ipm_map_points():
     points_mapped = ipm.map_points(
         plane,
         points=points,
-        points_header=cam.header,
         output_frame=plane.header.frame_id)
     # Make goal points array, x and y are not exactly 0 because of the camera calibration as
     # well as an uneven amount of pixels
@@ -312,11 +308,11 @@ def test_map_point_invalid_plane_exception():
     """Check InvalidPlaneException is raised if a plane is invalid, i.e. a=b=c=0."""
     ipm = IPM(tf2.Buffer(), CameraInfo())
     with pytest.raises(InvalidPlaneException):
-        ipm.map_point(PlaneStamped(), Point2DStamped())
+        ipm.map_point(PlaneStamped(), Point2D())
 
 
 def test_map_points_invalid_plane_exception():
     """Check InvalidPlaneException is raised if a plane is invalid, i.e. a=b=c=0."""
     ipm = IPM(tf2.Buffer(), CameraInfo())
     with pytest.raises(InvalidPlaneException):
-        ipm.map_points(PlaneStamped(), np.array([]), Header())
+        ipm.map_points(PlaneStamped(), np.array([]))

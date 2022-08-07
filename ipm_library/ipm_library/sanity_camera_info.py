@@ -12,26 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-class CameraInfoNotSetException(Exception):
-    """Raised is a transform is requested without CameraInfo being set."""
-
-    pass
+from sensor_msgs.msg import CameraInfo
 
 
-class InvalidCameraInfoException(Exception):
-    """Raised is the CameraInfo is invalid."""
-
-    pass
-
-
-class InvalidPlaneException(Exception):
-    """Raised if a plane is invalid, i.e. a=b=c=0."""
-
-    pass
-
-
-class NoIntersectionError(Exception):
-    """Raised if a point is not able to be mapped onto the plane."""
-
-    pass
+def sanity_check(camera_info: CameraInfo) -> bool:
+    """
+    Sanity check if the camera info is valid.
+    """
+    # Check K intrinsic camera matrix
+    k = camera_info.k
+    if (k[0] == 0 or k[1] != 0 or k[2] == 0 or
+        k[3] != 0 or k[4] == 0 or k[5] == 0 or
+        k[6] != 0 or k[7] != 0 or k[8] != 1):
+        return False
+    return True

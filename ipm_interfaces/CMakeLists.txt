@@ -21,7 +21,6 @@ endif()
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/PlaneStamped.msg"
-  "msg/Point2DStamped.msg"
   "srv/MapPoint.srv"
   "srv/MapPointCloud2.srv"
   DEPENDENCIES geometry_msgs sensor_msgs shape_msgs std_msgs vision_msgs

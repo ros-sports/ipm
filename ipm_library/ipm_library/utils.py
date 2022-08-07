@@ -120,6 +120,8 @@ def get_field_intersection_for_pixels(
     binning_y = max(camera_info.binning_y, 1) / scale
 
     # Create rays
+    print('create rays')
+    print('')
     ray_directions = np.zeros((points.shape[0], 3))
     ray_directions[:, 0] = ((points[:, 0] - (camera_projection_matrix[2] / binning_x)) /
                             (camera_projection_matrix[0] / binning_x))

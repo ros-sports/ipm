@@ -16,7 +16,10 @@ from typing import Optional
 
 from ipm_interfaces.msg import PlaneStamped, Point2DStamped
 from ipm_library import utils
-from ipm_library.exceptions import InvalidPlaneException, NoIntersectionError
+from ipm_library.exceptions import (
+    CameraInfoNotSetException,
+    InvalidPlaneException,
+    NoIntersectionError)
 import numpy as np
 from sensor_msgs.msg import CameraInfo
 from std_msgs.msg import Header
@@ -82,6 +85,7 @@ class IPM:
         :param plane: Plane in which the mapping should happen
         :param point: Point that should be mapped
         :param output_frame: TF2 frame in which the output should be provided
+        :rasies CameraInfoNotSetException if camera info has not been provided
         :raise: InvalidPlaneException if the plane is invalid
         :raise: NoIntersectionError if the point is not on the plane
         :returns: The point mapped onto the given plane in the output frame
@@ -126,12 +130,15 @@ class IPM:
             a nx2 numpy array where n is the number of points
         :param points_header: Header for the numpy message containing the frame and time stamp
         :param output_frame: TF2 frame in which the output should be provided
-        :raise: InvalidPlaneException if the plane is invalid
         :returns: The points mapped onto the given plane in the output frame
+        :rasies CameraInfoNotSetException if camera info has not been provided
+        :raises InvalidPlaneException if the plane is invalid
         """
+        if not self.camera_info_received():
+            raise CameraInfoNotSetException
+
         assert points_header.stamp == plane_msg.header.stamp, \
             'Plane and Point need to have the same time stamp'
-        assert self.camera_info_received(), 'No camera info set'
         assert self._camera_info.header.frame_id == points_header.frame_id, \
             'Points need to be in the frame described in the camera info message'
 

@@ -13,6 +13,12 @@
 # limitations under the License.
 
 
+class CameraInfoNotSetException(Exception):
+    """Raised is a transform is requested without CameraInfo being set."""
+
+    pass
+
+
 class InvalidPlaneException(Exception):
     """Raised if a plane is invalid, i.e. a=b=c=0."""
 

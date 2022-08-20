@@ -329,4 +329,4 @@ def test_camera_info_not_set():
     """Check CameraInfoNotSetException is raised if camera info is not set."""
     ipm = IPM(tf2.Buffer())
     with pytest.raises(CameraInfoNotSetException):
-        ipm.map_point(PlaneStamped(), Point2D())
+        ipm.map_point(PlaneStamped(), Point2DStamped())

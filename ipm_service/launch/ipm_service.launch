@@ -1,7 +1,0 @@
-<launch>
-    <arg name="sim" default="false"/>
-
-    <node pkg="ipm_service" exec="ipm_service" output="screen">
-        <param name="use_sim_time" value="$(var sim)"/>
-    </node>
-</launch>

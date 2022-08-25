@@ -42,18 +42,20 @@ def test_ipm_camera_info():
     """Test if the camera info is handled correctly."""
     # We need to create a dummy tf buffer
     tf_buffer = tf2.Buffer()
+    # Empty camera info
+    empty_camera_info = CameraInfo()
     # Create an IPM
-    ipm1 = IPM(tf_buffer, camera_info)
+    ipm1 = IPM(tf_buffer, empty_camera_info)
     assert ipm1.camera_info_received(), 'Failed to set camera info in constructor'
     # Create another IPM without the CameraInfo
     ipm2 = IPM(tf_buffer)
     assert not ipm2.camera_info_received(), 'Missing camera info not recognized'
     # Set camera info
-    ipm2.set_camera_info(camera_info)
+    ipm2.set_camera_info(empty_camera_info)
     assert ipm1.camera_info_received(), 'Failed to set camera info'
     # Set another camera info
     ipm2.set_camera_info(CameraInfo(header=Header(frame_id='test')))
-    assert ipm2._camera_info != camera_info, 'Camera info not updated'
+    assert ipm2._camera_info != empty_camera_info, 'Camera info not updated'
 
 
 def test_ipm_map_point_no_transform():
@@ -262,14 +264,14 @@ def test_ipm_map_points():
 
 def test_map_point_invalid_plane_exception():
     """Check InvalidPlaneException is raised if a plane is invalid, i.e. a=b=c=0."""
-    ipm = IPM(tf2.Buffer(), camera_info)
+    ipm = IPM(tf2.Buffer(), CameraInfo())
     with pytest.raises(InvalidPlaneException):
         ipm.map_point(PlaneStamped(), Point2DStamped())
 
 
 def test_map_points_invalid_plane_exception():
     """Check InvalidPlaneException is raised if a plane is invalid, i.e. a=b=c=0."""
-    ipm = IPM(tf2.Buffer(), camera_info)
+    ipm = IPM(tf2.Buffer(), CameraInfo())
     with pytest.raises(InvalidPlaneException):
         ipm.map_points(PlaneStamped(), np.array([]), Header())
 

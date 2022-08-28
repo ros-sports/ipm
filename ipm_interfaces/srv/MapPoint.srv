@@ -1,6 +1,8 @@
-ipm_interfaces/PlaneStamped plane
-ipm_interfaces/Point2DStamped point
-std_msgs/String output_frame
+shape_msgs/Plane plane
+vision_msgs/Point2D point
+builtin_interfaces/Time time
+std_msgs/String plane_frame_id
+std_msgs/String output_frame_id
 ---
 # Result code defintions
 uint8 RESULT_SUCCESS=0

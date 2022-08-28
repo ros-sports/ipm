@@ -1,6 +1,5 @@
 shape_msgs/Plane plane
 sensor_msgs/PointCloud2 points
-builtin_interfaces/Time time
 std_msgs/String plane_frame_id
 std_msgs/String output_frame_id
 ---

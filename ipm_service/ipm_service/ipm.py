@@ -60,17 +60,19 @@ class IPMService(Node):
             return response
 
         # Map optional marking from '' to None
-        if request.output_frame.data == '':
-            output_frame = None
+        if request.output_frame_id.data == '':
+            output_frame_id = None
         else:
-            output_frame = request.output_frame.data
+            output_frame_id = request.output_frame_id.data
 
         # Maps the given point and handle different result scenarios
         try:
             response.point = self.ipm.map_point(
                 request.plane,
                 request.point,
-                output_frame)
+                request.time,
+                request.plane_frame_id.data,
+                output_frame_id)
             response.result = MapPoint.Response.RESULT_SUCCESS
         except NoIntersectionError:
             response.result = MapPoint.Response.RESULT_NO_INTERSECTION
@@ -97,24 +99,25 @@ class IPMService(Node):
             return response
 
         # Map optional marking from '' to None
-        if request.output_frame.data == '':
-            output_frame = self.ipm.get_camera_info().header.frame_id
+        if request.output_frame_id.data == '':
+            output_frame_id = self.ipm.get_camera_info().header.frame_id
         else:
-            output_frame = request.output_frame.data
+            output_frame_id = request.output_frame_id.data
 
         # Map the given point and handle different result scenarios
         try:
             mapped_points = self.ipm.map_points(
                 request.plane,
                 read_points_numpy(request.points),
-                request.points.header,
-                output_frame)
+                request.points.header.stamp,
+                request.plane_frame_id.data,
+                output_frame_id)
 
             # Convert them into a PointCloud2
             response.points = create_cloud_xyz32(
                 Header(
                     stamp=request.points.header.stamp,
-                    frame_id=output_frame),
+                    frame_id=output_frame_id),
                 mapped_points)
 
             response.result = MapPointCloud2.Response.RESULT_SUCCESS

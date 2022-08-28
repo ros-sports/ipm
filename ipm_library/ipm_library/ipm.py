@@ -23,7 +23,6 @@ from ipm_library.exceptions import (
 import numpy as np
 from sensor_msgs.msg import CameraInfo
 from shape_msgs.msg import Plane
-from std_msgs.msg import Header
 from tf2_geometry_msgs import PointStamped
 import tf2_ros
 from vision_msgs.msg import Point2D
@@ -78,7 +77,7 @@ class IPM:
             plane: Plane,
             point: Point2D,
             time: Time,
-            plane_frame_id: Optional[str] = None,
+            plane_frame_id: str,
             output_frame_id: Optional[str] = None) -> PointStamped:
         """
         Map `Point2DStamped` to 3D `Point` assuming point lies on given plane.
@@ -128,7 +127,7 @@ class IPM:
             plane_msg: Plane,
             points: np.ndarray,
             time: Time,
-            plane_frame_id: Optional[str] = None,
+            plane_frame_id: str,
             output_frame_id: Optional[str] = None) -> np.ndarray:
         """
         Map image points onto a given plane using the latest CameraInfo intrinsics.
@@ -146,7 +145,7 @@ class IPM:
         if not self.camera_info_received():
             raise CameraInfoNotSetException
 
-        if not np.any(plane_msg.plane.coef[:3]):
+        if not np.any(plane_msg.coef[:3]):
             raise InvalidPlaneException
 
         # Convert plane from general form to point normal form

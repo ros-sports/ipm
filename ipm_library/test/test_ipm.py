@@ -114,11 +114,7 @@ def test_ipm_map_points_no_transform():
         [0, 0, 0]
     ])
     # Map points
-    _, points_mapped = ipm.map_points(
-        plane,
-        points,
-        Time(),
-        camera_info.header.frame_id)
+    _, points_mapped = ipm.map_points(plane, points)
     # Make goal points array, x and y are not exactly 0 because of the camera calibration as
     # well as an uneven amount of pixels
     goal_point_array = np.array([
@@ -147,11 +143,7 @@ def test_ipm_map_point_no_transform_no_intersection():
     # Test if a NoIntersectionError is raised
     with pytest.raises(NoIntersectionError):
         # Map points
-        ipm.map_point(
-            plane,
-            point,
-            Time(),
-            camera_info.header.frame_id)
+        ipm.map_point(plane, point)
 
 
 def test_ipm_map_points_no_transform_no_intersection():
@@ -170,11 +162,7 @@ def test_ipm_map_points_no_transform_no_intersection():
         [0, 0, 0]
     ])
     # Map points
-    _, points_mapped = ipm.map_points(
-        plane,
-        points,
-        Time(),
-        camera_info.header.frame_id)
+    _, points_mapped = ipm.map_points(plane, points)
     # Make goal points array, x and y are not exactly 0 because of the camera calibration as
     # well as an uneven amount of pixels
     goal_point_array = np.array([
@@ -209,7 +197,6 @@ def test_ipm_map_point():
     point_mapped = ipm.map_point(
         plane,
         point,
-        Time(),
         plane_frame_id='base_footprint',
         output_frame_id='base_footprint')
     # Check header
@@ -256,7 +243,6 @@ def test_ipm_map_points():
     _, points_mapped = ipm.map_points(
         plane,
         points=points,
-        time=Time(),
         plane_frame_id='base_footprint',
         output_frame_id='base_footprint')
     # Make goal points array, x and y are not exactly 0 because of the camera calibration as
@@ -274,21 +260,21 @@ def test_map_point_invalid_plane_exception():
     """Check InvalidPlaneException is raised if a plane is invalid, i.e. a=b=c=0."""
     ipm = IPM(tf2.Buffer(), CameraInfo())
     with pytest.raises(InvalidPlaneException):
-        ipm.map_point(Plane(), Point2D(), Time(), '')
+        ipm.map_point(Plane(), Point2D())
 
 
 def test_map_points_invalid_plane_exception():
     """Check InvalidPlaneException is raised if a plane is invalid, i.e. a=b=c=0."""
     ipm = IPM(tf2.Buffer(), CameraInfo())
     with pytest.raises(InvalidPlaneException):
-        ipm.map_points(Plane(), np.array([]), Time(), '')
+        ipm.map_points(Plane(), np.array([]))
 
 
 def test_camera_info_not_set():
     """Check CameraInfoNotSetException is raised if camera info is not set."""
     ipm = IPM(tf2.Buffer())
     with pytest.raises(CameraInfoNotSetException):
-        ipm.map_point(Plane(), Point2D(), Time(), '')
+        ipm.map_point(Plane(), Point2D())
 
 
 def test_map_point_current_time_used_when_time_parameter_is_not_provided():

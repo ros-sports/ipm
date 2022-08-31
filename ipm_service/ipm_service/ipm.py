@@ -58,11 +58,17 @@ class IPMService(Node):
             response.result = MapPoint.Response.RESULT_NO_CAMERA_INFO
             return response
 
-        # Map optional marking from '' to None
-        if request.output_frame_id.data == '':
+        # Map optional plane_frame_id from '' to None
+        if request.plane_frame_id == '':
+            plane_frame_id = None
+        else:
+            plane_frame_id = request.plane_frame_id
+
+        # Map optional output_frame_id from '' to None
+        if request.output_frame_id == '':
             output_frame_id = None
         else:
-            output_frame_id = request.output_frame_id.data
+            output_frame_id = request.output_frame_id
 
         # Maps the given point and handle different result scenarios
         try:
@@ -70,7 +76,7 @@ class IPMService(Node):
                 request.plane,
                 request.point,
                 request.time,
-                request.plane_frame_id.data,
+                plane_frame_id,
                 output_frame_id)
             response.result = MapPoint.Response.RESULT_SUCCESS
         except NoIntersectionError:
@@ -97,11 +103,17 @@ class IPMService(Node):
             response.result = MapPointCloud2.Response.RESULT_NO_CAMERA_INFO
             return response
 
-        # Map optional marking from '' to None
-        if request.output_frame_id.data == '':
+        # Map optional plane_frame_id from '' to None
+        if request.plane_frame_id == '':
+            plane_frame_id = None
+        else:
+            plane_frame_id = request.plane_frame_id
+
+        # Map optional output_frame_id from '' to None
+        if request.output_frame_id == '':
             output_frame_id = self.ipm.get_camera_info().header.frame_id
         else:
-            output_frame_id = request.output_frame_id.data
+            output_frame_id = request.output_frame_id
 
         # Map the given point and handle different result scenarios
         try:
@@ -109,7 +121,7 @@ class IPMService(Node):
                 request.plane,
                 read_points_numpy(request.points),
                 request.points.header.stamp,
-                request.plane_frame_id.data,
+                plane_frame_id,
                 output_frame_id)
 
             # Convert them into a PointCloud2

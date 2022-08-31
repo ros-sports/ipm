@@ -148,10 +148,7 @@ def test_map_point():
     plane.coef[3] = -1.0  # 1 meter distance
 
     client = test_node.create_client(MapPoint, 'map_point')
-    req = MapPoint.Request(
-        point=point,
-        plane=plane,
-        plane_frame_id=String(data='camera_optical_frame'))
+    req = MapPoint.Request(point=point, plane=plane)
     future = client.call_async(req)
     rclpy.spin_once(ipm_service_node, timeout_sec=0.1)
 
@@ -242,10 +239,7 @@ def test_map_point_cloud():
     plane.coef[3] = -1.0  # 1 meter distance
 
     client = test_node.create_client(MapPointCloud2, 'map_pointcloud2')
-    req = MapPointCloud2.Request(
-        points=point_cloud,
-        plane=plane,
-        plane_frame_id=String(data='camera_optical_frame'))
+    req = MapPointCloud2.Request(points=point_cloud, plane=plane)
     future = client.call_async(req)
     rclpy.spin_once(ipm_service_node, timeout_sec=0.1)
 

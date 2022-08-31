@@ -76,7 +76,7 @@ class IPM:
             self,
             plane: Plane,
             point: Point2D,
-            time: Optional[Time] = Time(),
+            time: Time = Time(),
             plane_frame_id: Optional[str] = None,
             output_frame_id: Optional[str] = None) -> PointStamped:
         """
@@ -126,7 +126,7 @@ class IPM:
             self,
             plane_msg: Plane,
             points: np.ndarray,
-            time: Optional[Time] = Time(),
+            time: Time = Time(),
             plane_frame_id: Optional[str] = None,
             output_frame_id: Optional[str] = None) -> np.ndarray:
         """

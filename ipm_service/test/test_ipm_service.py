@@ -20,7 +20,7 @@ import rclpy
 from sensor_msgs.msg import CameraInfo
 from sensor_msgs_py.point_cloud2 import create_cloud, PointField, read_points_numpy
 from shape_msgs.msg import Plane
-from std_msgs.msg import Header, String
+from std_msgs.msg import Header
 from tf2_ros import Buffer
 from vision_msgs.msg import Point2D
 
@@ -158,9 +158,7 @@ def test_map_point():
     assert future.result().result == MapPoint.Response.RESULT_SUCCESS
 
     ipm = IPM(Buffer(), camera_info)
-    expected_point = ipm.map_point(
-        plane,
-        point)
+    expected_point = ipm.map_point(plane, point)
     assert future.result().point == expected_point
 
     rclpy.shutdown()
@@ -249,9 +247,7 @@ def test_map_point_cloud():
     assert future.result().result == MapPointCloud2.Response.RESULT_SUCCESS
 
     ipm = IPM(Buffer(), camera_info)
-    _, expected_points = ipm.map_points(
-        plane,
-        points)
+    _, expected_points = ipm.map_points(plane, points)
 
     np.testing.assert_allclose(
         read_points_numpy(future.result().points),

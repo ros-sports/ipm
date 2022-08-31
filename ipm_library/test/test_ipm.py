@@ -75,9 +75,7 @@ def test_ipm_map_point_no_transform():
     point_original = np.array([[point_original_x], [point_original_y]])
     point_original_msg = Point2D(x=point_original_x, y=point_original_y)
     # Map points
-    point_mapped_msg = ipm.map_point(
-        plane,
-        point_original_msg)
+    point_mapped_msg = ipm.map_point(plane, point_original_msg)
     # Perform projection back into 2D image using projection matrix K to ensure that
     # it's the same as the original point
     point_mapped_vec = np.array([[point_mapped_msg.point.x],

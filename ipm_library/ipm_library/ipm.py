@@ -88,9 +88,12 @@ class IPM:
 
         :param plane: Plane in which the mapping should happen
         :param point: Point that should be mapped
-        :param time: Time at which the point (or the image where it is from) is was captured
-        :param plane_frame_id: TF2 frame referenced for the plane
-        :param output_frame_id: TF2 frame in which the output should be provided
+        :param time: Time that point (or the image where it is from) was captured. If not
+            provided, current time will be used for transforms.
+        :param plane_frame_id: TF2 frame that the plane is defined in. If not provided, it is
+            assumed that the plane is in CameraInfo's frame.
+        :param output_frame_id: TF2 frame in which the output should be provided. If not provided,
+            the returned point will be in CameraInfo's frame.
         :rasies CameraInfoNotSetException if camera info has not been provided
         :raise: InvalidPlaneException if the plane is invalid
         :raise: NoIntersectionError if the point is not on the plane
@@ -131,9 +134,12 @@ class IPM:
         :param plane_msg: Plane in which the mapping should happen
         :param points: Points that should be mapped in the form of
             a nx2 numpy array where n is the number of points
-        :param time: Time at which the point (or the image where it is from) is was captured
-        :param plane_frame_id: TF2 frame referenced for the plane
-        :param output_frame_id: TF2 frame in which the output should be provided
+        :param time: Time that points (or the image where it is from) was captured. If not
+            provided, current time will be used for transforms.
+        :param plane_frame_id: TF2 frame that the plane is defined in. If not provided, it is
+            assumed that the plane is in CameraInfo's frame.
+        :param output_frame_id: TF2 frame in which the output should be provided. If not provided,
+            the returned points will be in CameraInfo's frame.
         :returns: The points mapped onto the given plane in the output frame
         :rasies CameraInfoNotSetException if camera info has not been provided
         :raises InvalidPlaneException if the plane is invalid

@@ -111,7 +111,7 @@ class IPMService(Node):
 
         # Map optional output_frame_id from '' to None
         if request.output_frame_id == '':
-            output_frame_id = self.ipm.get_camera_info().header.frame_id
+            output_frame_id = None
         else:
             output_frame_id = request.output_frame_id
 

@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from builtin_interfaces.msg import Time
 from ipm_interfaces.srv import MapPoint, MapPointCloud2
 from ipm_library.ipm import IPM
 from ipm_service.ipm import IPMService
@@ -164,9 +163,7 @@ def test_map_point():
     ipm = IPM(Buffer(), camera_info)
     expected_point = ipm.map_point(
         plane,
-        point,
-        Time(),
-        plane_frame_id='camera_optical_frame')
+        point)
     assert future.result().point == expected_point
 
     rclpy.shutdown()
@@ -260,9 +257,7 @@ def test_map_point_cloud():
     ipm = IPM(Buffer(), camera_info)
     expected_points = ipm.map_points(
         plane,
-        points,
-        time=Time(),
-        plane_frame_id='camera_optical_frame')
+        points)
 
     np.testing.assert_allclose(
         read_points_numpy(future.result().points),

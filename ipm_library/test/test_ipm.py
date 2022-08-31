@@ -77,11 +77,12 @@ def test_ipm_map_point_no_transform():
     # Map points
     point_mapped_msg = ipm.map_point(
         plane,
-        point_original_msg,
-        Time(),
-        camera_info.header.frame_id)
+        point_original_msg)
     # Check header
-    assert point_mapped_msg.header == camera_info.header, 'Point header does not match'
+    assert point_mapped_msg.header.frame_id == camera_info.header.frame_id, \
+        "Mapped point's frame_id doesn't match the one from camera_info, but it should."
+    assert point_mapped_msg.header.stamp == Time(), \
+        "Mapped point's stamp should be builtin_interfaces.msg.Time(), but it isn't."
 
     # Perform projection back into 2D image using projection matrix K to ensure that
     # it's the same as the original point

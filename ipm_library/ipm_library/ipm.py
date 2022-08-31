@@ -76,8 +76,8 @@ class IPM:
             self,
             plane: Plane,
             point: Point2D,
-            time: Time,
-            plane_frame_id: str,
+            time: Optional[Time] = Time(),
+            plane_frame_id: Optional[str] = None,
             output_frame_id: Optional[str] = None) -> PointStamped:
         """
         Map `Point2DStamped` to 3D `Point` assuming point lies on given plane.
@@ -126,8 +126,8 @@ class IPM:
             self,
             plane_msg: Plane,
             points: np.ndarray,
-            time: Time,
-            plane_frame_id: str,
+            time: Optional[Time] = Time(),
+            plane_frame_id: Optional[str] = None,
             output_frame_id: Optional[str] = None) -> np.ndarray:
         """
         Map image points onto a given plane using the latest CameraInfo intrinsics.
@@ -148,6 +148,10 @@ class IPM:
         if not np.any(plane_msg.coef[:3]):
             raise InvalidPlaneException
 
+        # If no plane_frame_id is provided, use _camera_info's frame_id
+        if plane_frame_id is None:
+            plane_frame_id = self._camera_info.header.frame_id
+
         # Convert plane from general form to point normal form
         plane = utils.plane_general_to_point_normal(plane_msg)
 
@@ -156,7 +160,7 @@ class IPM:
             plane=plane,
             input_frame=plane_frame_id,
             output_frame=self._camera_info.header.frame_id,
-            stamp=time,
+            time=time,
             buffer=self._tf_buffer)
 
         # Convert points to float if they aren't allready

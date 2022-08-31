@@ -21,7 +21,6 @@ from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
 from sensor_msgs.msg import CameraInfo
 from sensor_msgs_py.point_cloud2 import create_cloud_xyz32, read_points_numpy
-from std_msgs.msg import Header
 import tf2_ros as tf2
 
 
@@ -106,7 +105,7 @@ class IPMService(Node):
 
         # Map the given point and handle different result scenarios
         try:
-            mapped_points = self.ipm.map_points(
+            header, mapped_points = self.ipm.map_points(
                 request.plane,
                 read_points_numpy(request.points),
                 request.points.header.stamp,
@@ -114,11 +113,7 @@ class IPMService(Node):
                 output_frame_id)
 
             # Convert them into a PointCloud2
-            response.points = create_cloud_xyz32(
-                Header(
-                    stamp=request.points.header.stamp,
-                    frame_id=output_frame_id),
-                mapped_points)
+            response.points = create_cloud_xyz32(header, mapped_points)
 
             response.result = MapPointCloud2.Response.RESULT_SUCCESS
         except InvalidPlaneException:

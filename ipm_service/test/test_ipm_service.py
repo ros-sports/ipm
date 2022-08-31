@@ -255,7 +255,7 @@ def test_map_point_cloud():
     assert future.result().result == MapPointCloud2.Response.RESULT_SUCCESS
 
     ipm = IPM(Buffer(), camera_info)
-    expected_points = ipm.map_points(
+    _, expected_points = ipm.map_points(
         plane,
         points)
 

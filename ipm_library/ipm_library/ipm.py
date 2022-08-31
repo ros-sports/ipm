@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional
+from typing import Optional, Tuple
 
 from builtin_interfaces.msg import Time
 from ipm_library import utils
@@ -23,6 +23,7 @@ from ipm_library.exceptions import (
 import numpy as np
 from sensor_msgs.msg import CameraInfo
 from shape_msgs.msg import Plane
+from std_msgs.msg import Header
 from tf2_geometry_msgs import PointStamped
 import tf2_ros
 from vision_msgs.msg import Point2D
@@ -96,12 +97,13 @@ class IPM:
         :returns: The point mapped onto the given plane in the output frame
         """
         # Create numpy array from point and call map_points()
-        np_point = self.map_points(
+        header, np_points = self.map_points(
             plane,
             np.array([[point.x, point.y]]),
             time,
             plane_frame_id,
-            output_frame_id=None)[0]
+            output_frame_id)
+        np_point = np_points[0]
 
         # Check if we have any nan values, aka if we have a valid intersection
         if np.isnan(np_point).any():
@@ -112,13 +114,7 @@ class IPM:
         intersection_stamped.point.x = np_point[0]
         intersection_stamped.point.y = np_point[1]
         intersection_stamped.point.z = np_point[2]
-        intersection_stamped.header.stamp = time
-        intersection_stamped.header.frame_id = self._camera_info.header.frame_id
-
-        # Transform output point if output frame if needed
-        if output_frame_id not in [None, self._camera_info.header.frame_id]:
-            intersection_stamped = self._tf_buffer.transform(
-                intersection_stamped, output_frame_id)
+        intersection_stamped.header = header
 
         return intersection_stamped
 
@@ -128,7 +124,7 @@ class IPM:
             points: np.ndarray,
             time: Time = Time(),
             plane_frame_id: Optional[str] = None,
-            output_frame_id: Optional[str] = None) -> np.ndarray:
+            output_frame_id: Optional[str] = None) -> Tuple[Header, np.ndarray]:
         """
         Map image points onto a given plane using the latest CameraInfo intrinsics.
 
@@ -151,6 +147,10 @@ class IPM:
         # If no plane_frame_id is provided, use _camera_info's frame_id
         if plane_frame_id is None:
             plane_frame_id = self._camera_info.header.frame_id
+
+        # If no output_frame_id is provided, use _camera_info's frame_id
+        if output_frame_id is None:
+            output_frame_id = self._camera_info.header.frame_id
 
         # Convert plane from general form to point normal form
         plane = utils.plane_general_to_point_normal(plane_msg)
@@ -183,4 +183,7 @@ class IPM:
             np_points = utils.transform_points(
                 np_points, output_transformation.transform)
 
-        return np_points
+        # Create header
+        header = Header(frame_id=output_frame_id, stamp=time)
+
+        return (header, np_points)

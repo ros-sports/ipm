@@ -114,7 +114,7 @@ def test_ipm_map_points_no_transform():
         [0, 0, 0]
     ])
     # Map points
-    points_mapped = ipm.map_points(
+    _, points_mapped = ipm.map_points(
         plane,
         points,
         Time(),
@@ -170,7 +170,7 @@ def test_ipm_map_points_no_transform_no_intersection():
         [0, 0, 0]
     ])
     # Map points
-    points_mapped = ipm.map_points(
+    _, points_mapped = ipm.map_points(
         plane,
         points,
         Time(),
@@ -253,7 +253,7 @@ def test_ipm_map_points():
         [0, 0, 0]
     ])
     # Map points
-    points_mapped = ipm.map_points(
+    _, points_mapped = ipm.map_points(
         plane,
         points=points,
         time=Time(),

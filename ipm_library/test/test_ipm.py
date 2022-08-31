@@ -78,12 +78,6 @@ def test_ipm_map_point_no_transform():
     point_mapped_msg = ipm.map_point(
         plane,
         point_original_msg)
-    # Check header
-    assert point_mapped_msg.header.frame_id == camera_info.header.frame_id, \
-        "Mapped point's frame_id doesn't match the one from camera_info, but it should."
-    assert point_mapped_msg.header.stamp == Time(), \
-        "Mapped point's stamp should be builtin_interfaces.msg.Time(), but it isn't."
-
     # Perform projection back into 2D image using projection matrix K to ensure that
     # it's the same as the original point
     point_mapped_vec = np.array([[point_mapped_msg.point.x],
@@ -295,3 +289,15 @@ def test_camera_info_not_set():
     ipm = IPM(tf2.Buffer())
     with pytest.raises(CameraInfoNotSetException):
         ipm.map_point(Plane(), Point2D(), Time(), '')
+
+
+def test_map_point_current_time_used_when_time_parameter_is_not_provided():
+    ipm = IPM(tf2.Buffer(), camera_info)
+    point = ipm.map_point(Plane(coef=[0.0, 0.0, 1.0, -1.0]), Point2D())
+    assert point.header.stamp == Time()
+
+
+def test_map_point_camera_frame_used_when_output_frame_id_parameter_is_not_provided():
+    ipm = IPM(tf2.Buffer(), camera_info)
+    point = ipm.map_point(Plane(coef=[0.0, 0.0, 1.0, -1.0]), Point2D())
+    assert point.header.frame_id == camera_info.header.frame_id

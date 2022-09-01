@@ -7,6 +7,7 @@
   <maintainer email="git@flova.de">Florian Vahl</maintainer>
   <license>Apache License 2.0</license>
 
+  <depend>builtin_interfaces</depend>
   <depend>geometry_msgs</depend>
   <depend>ipm_interfaces</depend>
   <depend>python3-numpy</depend>

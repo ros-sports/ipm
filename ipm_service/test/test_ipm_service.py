@@ -149,7 +149,9 @@ def test_map_point():
     plane.coef[3] = -1.0  # 1 meter distance
 
     client = test_node.create_client(MapPoint, 'map_point')
-    req = MapPoint.Request(point=point, plane=plane)
+    req = MapPoint.Request(
+        point=point,
+        plane=plane)
     future = client.call_async(req)
     rclpy.spin_once(ipm_service_node, timeout_sec=0.1)
 
@@ -159,7 +161,10 @@ def test_map_point():
     assert future.result().result == MapPoint.Response.RESULT_SUCCESS
 
     ipm = IPM(Buffer(), camera_info)
-    expected_point = ipm.map_point(plane, point, Time())
+    expected_point = ipm.map_point(
+        plane,
+        point,
+        Time())
     assert future.result().point == expected_point
 
     rclpy.shutdown()
@@ -238,7 +243,9 @@ def test_map_point_cloud():
     plane.coef[3] = -1.0  # 1 meter distance
 
     client = test_node.create_client(MapPointCloud2, 'map_pointcloud2')
-    req = MapPointCloud2.Request(points=point_cloud, plane=plane)
+    req = MapPointCloud2.Request(
+        points=point_cloud,
+        plane=plane)
     future = client.call_async(req)
     rclpy.spin_once(ipm_service_node, timeout_sec=0.1)
 
@@ -248,7 +255,10 @@ def test_map_point_cloud():
     assert future.result().result == MapPointCloud2.Response.RESULT_SUCCESS
 
     ipm = IPM(Buffer(), camera_info)
-    _, expected_points = ipm.map_points(plane, points, Time())
+    _, expected_points = ipm.map_points(
+        plane,
+        points,
+        Time())
 
     np.testing.assert_allclose(
         read_points_numpy(future.result().points),

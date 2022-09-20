@@ -75,7 +75,10 @@ def test_ipm_map_point_no_transform():
     point_original = np.array([[point_original_x], [point_original_y]])
     point_original_msg = Point2D(x=point_original_x, y=point_original_y)
     # Map points
-    point_mapped_msg = ipm.map_point(plane, point_original_msg, Time())
+    point_mapped_msg = ipm.map_point(
+        plane,
+        point_original_msg,
+        Time())
     # Perform projection back into 2D image using projection matrix K to ensure that
     # it's the same as the original point
     point_mapped_vec = np.array([[point_mapped_msg.point.x],
@@ -112,7 +115,10 @@ def test_ipm_map_points_no_transform():
         [0, 0, 0]
     ])
     # Map points
-    _, points_mapped = ipm.map_points(plane, points, Time())
+    _, points_mapped = ipm.map_points(
+        plane,
+        points,
+        Time())
     # Make goal points array, x and y are not exactly 0 because of the camera calibration as
     # well as an uneven amount of pixels
     goal_point_array = np.array([
@@ -141,7 +147,10 @@ def test_ipm_map_point_no_transform_no_intersection():
     # Test if a NoIntersectionError is raised
     with pytest.raises(NoIntersectionError):
         # Map points
-        ipm.map_point(plane, point, Time())
+        ipm.map_point(
+            plane,
+            point,
+            Time())
 
 
 def test_ipm_map_points_no_transform_no_intersection():
@@ -160,7 +169,10 @@ def test_ipm_map_points_no_transform_no_intersection():
         [0, 0, 0]
     ])
     # Map points
-    _, points_mapped = ipm.map_points(plane, points, Time())
+    _, points_mapped = ipm.map_points(
+        plane,
+        points,
+        Time())
     # Make goal points array, x and y are not exactly 0 because of the camera calibration as
     # well as an uneven amount of pixels
     goal_point_array = np.array([
@@ -195,7 +207,7 @@ def test_ipm_map_point():
     point_mapped = ipm.map_point(
         plane,
         point,
-        time=Time(),
+        Time(),
         plane_frame_id='base_footprint',
         output_frame_id='base_footprint')
     # Check header

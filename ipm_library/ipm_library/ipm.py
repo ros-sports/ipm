@@ -77,7 +77,7 @@ class IPM:
             self,
             plane: Plane,
             point: Point2D,
-            time: Time = Time(),
+            time: Time,
             plane_frame_id: Optional[str] = None,
             output_frame_id: Optional[str] = None) -> PointStamped:
         """
@@ -88,8 +88,7 @@ class IPM:
 
         :param plane: Plane in which the mapping should happen
         :param point: Point that should be mapped
-        :param time: Time that point (or the image where it is from) was captured. If not
-            provided, current time will be used for transforms.
+        :param time: Time that point (or the image where it is from) was captured.
         :param plane_frame_id: TF2 frame that the plane is defined in. If not provided, it is
             assumed that the plane is in CameraInfo's frame.
         :param output_frame_id: TF2 frame in which the output should be provided. If not provided,
@@ -125,7 +124,7 @@ class IPM:
             self,
             plane_msg: Plane,
             points: np.ndarray,
-            time: Time = Time(),
+            time: Time,
             plane_frame_id: Optional[str] = None,
             output_frame_id: Optional[str] = None) -> Tuple[Header, np.ndarray]:
         """
@@ -134,8 +133,7 @@ class IPM:
         :param plane_msg: Plane in which the mapping should happen
         :param points: Points that should be mapped in the form of
             a nx2 numpy array where n is the number of points
-        :param time: Time that points (or the image where it is from) was captured. If not
-            provided, current time will be used for transforms.
+        :param time: Time that points (or the image where it is from) was captured.
         :param plane_frame_id: TF2 frame that the plane is defined in. If not provided, it is
             assumed that the plane is in CameraInfo's frame.
         :param output_frame_id: TF2 frame in which the output should be provided. If not provided,

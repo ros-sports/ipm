@@ -21,7 +21,6 @@ from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
 from sensor_msgs.msg import CameraInfo
 from sensor_msgs_py.point_cloud2 import create_cloud_xyz32, read_points_numpy
-from std_msgs.msg import Header
 import tf2_ros as tf2
 
 
@@ -59,11 +58,17 @@ class IPMService(Node):
             response.result = MapPoint.Response.RESULT_NO_CAMERA_INFO
             return response
 
-        # Map optional marking from '' to None
-        if request.output_frame_id.data == '':
+        # Map optional plane_frame_id from '' to None
+        if request.plane_frame_id == '':
+            plane_frame_id = None
+        else:
+            plane_frame_id = request.plane_frame_id
+
+        # Map optional output_frame_id from '' to None
+        if request.output_frame_id == '':
             output_frame_id = None
         else:
-            output_frame_id = request.output_frame_id.data
+            output_frame_id = request.output_frame_id
 
         # Maps the given point and handle different result scenarios
         try:
@@ -71,7 +76,7 @@ class IPMService(Node):
                 request.plane,
                 request.point,
                 request.time,
-                request.plane_frame_id.data,
+                plane_frame_id,
                 output_frame_id)
             response.result = MapPoint.Response.RESULT_SUCCESS
         except NoIntersectionError:
@@ -98,27 +103,29 @@ class IPMService(Node):
             response.result = MapPointCloud2.Response.RESULT_NO_CAMERA_INFO
             return response
 
-        # Map optional marking from '' to None
-        if request.output_frame_id.data == '':
-            output_frame_id = self.ipm.get_camera_info().header.frame_id
+        # Map optional plane_frame_id from '' to None
+        if request.plane_frame_id == '':
+            plane_frame_id = None
         else:
-            output_frame_id = request.output_frame_id.data
+            plane_frame_id = request.plane_frame_id
+
+        # Map optional output_frame_id from '' to None
+        if request.output_frame_id == '':
+            output_frame_id = None
+        else:
+            output_frame_id = request.output_frame_id
 
         # Map the given point and handle different result scenarios
         try:
-            mapped_points = self.ipm.map_points(
+            header, mapped_points = self.ipm.map_points(
                 request.plane,
                 read_points_numpy(request.points),
                 request.points.header.stamp,
-                request.plane_frame_id.data,
+                plane_frame_id,
                 output_frame_id)
 
             # Convert them into a PointCloud2
-            response.points = create_cloud_xyz32(
-                Header(
-                    stamp=request.points.header.stamp,
-                    frame_id=output_frame_id),
-                mapped_points)
+            response.points = create_cloud_xyz32(header, mapped_points)
 
             response.result = MapPointCloud2.Response.RESULT_SUCCESS
         except InvalidPlaneException:

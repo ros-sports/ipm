@@ -21,7 +21,7 @@ import rclpy
 from sensor_msgs.msg import CameraInfo
 from sensor_msgs_py.point_cloud2 import create_cloud, PointField, read_points_numpy
 from shape_msgs.msg import Plane
-from std_msgs.msg import Header, String
+from std_msgs.msg import Header
 from tf2_ros import Buffer
 from vision_msgs.msg import Point2D
 
@@ -151,8 +151,7 @@ def test_map_point():
     client = test_node.create_client(MapPoint, 'map_point')
     req = MapPoint.Request(
         point=point,
-        plane=plane,
-        plane_frame_id=String(data='camera_optical_frame'))
+        plane=plane)
     future = client.call_async(req)
     rclpy.spin_once(ipm_service_node, timeout_sec=0.1)
 
@@ -165,8 +164,7 @@ def test_map_point():
     expected_point = ipm.map_point(
         plane,
         point,
-        Time(),
-        plane_frame_id='camera_optical_frame')
+        Time())
     assert future.result().point == expected_point
 
     rclpy.shutdown()
@@ -247,8 +245,7 @@ def test_map_point_cloud():
     client = test_node.create_client(MapPointCloud2, 'map_pointcloud2')
     req = MapPointCloud2.Request(
         points=point_cloud,
-        plane=plane,
-        plane_frame_id=String(data='camera_optical_frame'))
+        plane=plane)
     future = client.call_async(req)
     rclpy.spin_once(ipm_service_node, timeout_sec=0.1)
 
@@ -258,11 +255,10 @@ def test_map_point_cloud():
     assert future.result().result == MapPointCloud2.Response.RESULT_SUCCESS
 
     ipm = IPM(Buffer(), camera_info)
-    expected_points = ipm.map_points(
+    _, expected_points = ipm.map_points(
         plane,
         points,
-        time=Time(),
-        plane_frame_id='camera_optical_frame')
+        Time())
 
     np.testing.assert_allclose(
         read_points_numpy(future.result().points),

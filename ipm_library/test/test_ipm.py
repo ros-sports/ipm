@@ -289,12 +289,6 @@ def test_camera_info_not_set():
         ipm.map_point(Plane(), Point2D(), Time())
 
 
-def test_map_point_current_time_used_when_time_parameter_is_not_provided():
-    ipm = IPM(tf2.Buffer(), camera_info)
-    point = ipm.map_point(Plane(coef=[0.0, 0.0, 1.0, -1.0]), Point2D(), Time())
-    assert point.header.stamp == Time()
-
-
 def test_map_point_camera_frame_used_when_output_frame_id_parameter_is_not_provided():
     ipm = IPM(tf2.Buffer(), camera_info)
     point = ipm.map_point(Plane(coef=[0.0, 0.0, 1.0, -1.0]), Point2D(), Time())

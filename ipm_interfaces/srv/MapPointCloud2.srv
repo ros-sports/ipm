@@ -1,6 +1,7 @@
-ipm_interfaces/PlaneStamped plane
+shape_msgs/Plane plane
 sensor_msgs/PointCloud2 points
-std_msgs/String output_frame
+string plane_frame_id
+string output_frame_id
 ---
 # Result code defintions
 uint8 RESULT_SUCCESS=0

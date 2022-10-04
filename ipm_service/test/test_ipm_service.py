@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from ipm_interfaces.msg import PlaneStamped, Point2DStamped
+from builtin_interfaces.msg import Time
 from ipm_interfaces.srv import MapPoint, MapPointCloud2
 from ipm_library.ipm import IPM
 from ipm_service.ipm import IPMService
@@ -118,7 +118,7 @@ def test_map_point_no_intersection_error():
     rclpy.spin_once(ipm_service_node, timeout_sec=0.1)
 
     client = test_node.create_client(MapPoint, 'map_point')
-    req = MapPoint.Request(plane=PlaneStamped(plane=Plane(coef=[0, 0, 1, 1])))
+    req = MapPoint.Request(plane=Plane(coef=[0, 0, 1, 1]))
     future = client.call_async(req)
     rclpy.spin_once(ipm_service_node, timeout_sec=0.1)
 
@@ -140,19 +140,18 @@ def test_map_point():
     camera_info_pub.publish(camera_info)
     rclpy.spin_once(ipm_service_node, timeout_sec=0.1)
 
-    point = Point2DStamped(
-        header=Header(frame_id='camera_optical_frame'),
-        point=Point2D(x=100.0, y=100.0))
+    point = Point2D(x=100.0, y=100.0)
 
     # XY-plane at z = 1.0
     # Create Plane in the same frame as our camera with 1m distance facing the camera
-    plane = PlaneStamped()
-    plane.header.frame_id = 'camera_optical_frame'
-    plane.plane.coef[2] = 1.0  # Normal in z direction
-    plane.plane.coef[3] = -1.0  # 1 meter distance
+    plane = Plane()
+    plane.coef[2] = 1.0  # Normal in z direction
+    plane.coef[3] = -1.0  # 1 meter distance
 
     client = test_node.create_client(MapPoint, 'map_point')
-    req = MapPoint.Request(point=point, plane=plane)
+    req = MapPoint.Request(
+        point=point,
+        plane=plane)
     future = client.call_async(req)
     rclpy.spin_once(ipm_service_node, timeout_sec=0.1)
 
@@ -162,7 +161,10 @@ def test_map_point():
     assert future.result().result == MapPoint.Response.RESULT_SUCCESS
 
     ipm = IPM(Buffer(), camera_info)
-    expected_point = ipm.map_point(plane, point)
+    expected_point = ipm.map_point(
+        plane,
+        point,
+        Time())
     assert future.result().point == expected_point
 
     rclpy.shutdown()
@@ -228,7 +230,7 @@ def test_map_point_cloud():
     # Create input point cloud
     points = np.arange(100).reshape(-1, 2)
     point_cloud = create_cloud(
-        header=Header(frame_id='camera_optical_frame'),
+        header=Header(),
         fields=[
             PointField(name='x', offset=0, datatype=PointField.FLOAT32, count=1),
             PointField(name='y', offset=4, datatype=PointField.FLOAT32, count=1)],
@@ -236,13 +238,14 @@ def test_map_point_cloud():
 
     # XY-plane at z = 1.0
     # Create Plane in the same frame as our camera with 1m distance facing the camera
-    plane = PlaneStamped()
-    plane.header.frame_id = 'camera_optical_frame'
-    plane.plane.coef[2] = 1.0  # Normal in z direction
-    plane.plane.coef[3] = -1.0  # 1 meter distance
+    plane = Plane()
+    plane.coef[2] = 1.0  # Normal in z direction
+    plane.coef[3] = -1.0  # 1 meter distance
 
     client = test_node.create_client(MapPointCloud2, 'map_pointcloud2')
-    req = MapPointCloud2.Request(points=point_cloud, plane=plane)
+    req = MapPointCloud2.Request(
+        points=point_cloud,
+        plane=plane)
     future = client.call_async(req)
     rclpy.spin_once(ipm_service_node, timeout_sec=0.1)
 
@@ -252,8 +255,10 @@ def test_map_point_cloud():
     assert future.result().result == MapPointCloud2.Response.RESULT_SUCCESS
 
     ipm = IPM(Buffer(), camera_info)
-    expected_points = ipm.map_points(
-        plane, points, point_cloud.header)
+    _, expected_points = ipm.map_points(
+        plane,
+        points,
+        Time())
 
     np.testing.assert_allclose(
         read_points_numpy(future.result().points),

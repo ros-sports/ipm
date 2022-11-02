@@ -7,15 +7,19 @@
   <maintainer email="git@flova.de">Florian Vahl</maintainer>
   <license>Apache License 2.0</license>
 
-  <depend>builtin_interfaces</depend>
-  <depend>ipm_interfaces</depend>
-  <depend>python3-numpy</depend>
-  <depend>cv_bridge</depend>
-  <depend>python3-opencv</depend>
+  <exec_depend>cv_bridge</exec_depend>
+  <exec_depend>ipm_library</exec_depend>
+  <exec_depend>python3-numpyexec_</depend>
+  <exec_depend>python3-opencvexec_</depend>
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>sensor_msgs_py</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>tf2</exec_depend>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>
   <test_depend>ament_pep257</test_depend>
+  <test_depend>geometry_msgs</test_depend>
   <test_depend>python3-pytest</test_depend>
 
   <export>

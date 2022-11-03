@@ -60,7 +60,7 @@ class ImageIPM(Node):
             lambda msg: mask_publisher.publish(self.map_mask(msg)),
             1)
 
-    def map_mask(self, msg: Image, encoding='8UC1') -> PointCloud2:
+    def map_mask(self, msg: Image) -> PointCloud2:
         """
         Map a mask from the input image as a pointcloud on the field plane.
 
@@ -79,7 +79,7 @@ class ImageIPM(Node):
 
         # Convert subsampled image
         image = cv2.resize(
-            cv_bridge.imgmsg_to_cv2(msg, encoding),
+            cv_bridge.imgmsg_to_cv2(msg),
             (0, 0), fx=scale, fy=scale, interpolation=cv2.INTER_NEAREST)
 
         # Check if we have a mask or full image
@@ -91,7 +91,7 @@ class ImageIPM(Node):
         elif image_type == 'rgb_image':
             # Get indices for all pixels
             X, Y = np.meshgrid(np.arange(image.shape[0]), np.arange(image.shape[1]))
-            point_idx_tuple = np.vstack((X.ravel(), Y.ravel())).T
+            point_idx_tuple = np.vstack((X.ravel(), Y.ravel()))
         else:
             self.get_logger().error(f"Unsupported image type '{image_type}'!")
             return

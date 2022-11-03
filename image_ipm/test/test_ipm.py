@@ -18,10 +18,12 @@ from cv_bridge import CvBridge
 from geometry_msgs.msg import TransformStamped
 from image_ipm.ipm import ImageIPM
 import numpy as np
+from numpy.lib import recfunctions as rfn
 import rclpy
 from rclpy.node import Node
+from rclpy.parameter import Parameter
 from sensor_msgs.msg import CameraInfo, Image, PointCloud2
-from sensor_msgs_py.point_cloud2 import read_points_numpy
+from sensor_msgs_py.point_cloud2 import read_points, read_points_numpy
 from std_msgs.msg import Header
 from tf2_msgs.msg import TFMessage
 
@@ -45,7 +47,8 @@ img_center_y = camera_info.height / camera_info.binning_y // 2
 def standard_ipm_image_test_case(
         input_topic: str,
         input_msg: Image,
-        output_topic: str) -> Tuple[PointCloud2, Image]:
+        output_topic: str,
+        mode: str = 'mask') -> Tuple[PointCloud2, Image]:
     # Init ros
     rclpy.init()
     # Create IPM node
@@ -92,6 +95,8 @@ def standard_ipm_image_test_case(
     # Spin the ipm to process the new data
     rclpy.spin_once(node, timeout_sec=0.1)
 
+    node.set_parameters([Parameter("type", value=mode)])
+
     # Send camera info message to the IPM
     camera_info.header.stamp = header.stamp
     camera_info_pub.publish(camera_info)
@@ -120,7 +125,13 @@ def standard_ipm_image_test_case(
 
 def test_ipm_mask():
     # Create image detection
-    image_np = np.zeros((400, 600, 1), dtype=np.uint8)
+    image_np = np.zeros(
+        (
+            camera_info.height // camera_info.binning_y,
+            camera_info.width // camera_info.binning_x,
+            1
+        ),
+        dtype=np.uint8)
     image_np[int(img_center_y), int(img_center_x)] = 1
     image_np[int(img_center_y) + 1, int(img_center_x) + 1] = 255
     image = cv_bridge.cv2_to_imgmsg(image_np, '8UC1')
@@ -140,4 +151,46 @@ def test_ipm_mask():
         'Output frame is not "base_footprint"'
     np.testing.assert_allclose(
         output_np[0],
+        [0.0, 0.0, 0.0])
+
+
+def test_ipm_image():
+    # Create image detection
+    image_np = np.empty(
+        (
+            camera_info.height // camera_info.binning_y,
+            camera_info.width // camera_info.binning_x,
+            3
+        ),
+        dtype=np.uint8)
+    image_np[..., 0] = 0
+    image_np[..., 1] = 10
+    image_np[..., 2] = 100
+    image = cv_bridge.cv2_to_imgmsg(image_np, '8UC3')
+
+    # Run ipm
+    out, inp = standard_ipm_image_test_case(
+        'mask_in_image',
+        image,
+        'mask_relative_pc',
+        mode='rgb_image')
+
+    # Convert point cloud to numpy
+    output_np = read_points(out)
+
+    output_np = output_np.reshape(
+        camera_info.width // camera_info.binning_y,
+        camera_info.height // camera_info.binning_x)
+
+    # Get center pixel
+    center_output = output_np[int(img_center_x), int(img_center_y)]
+
+    # Assert that we recived the correct message
+    assert image_np.shape[0] * image_np.shape[1] == image_np.shape[0] * image_np.shape[1], \
+        'Wrong number of pixels'
+    assert out.header.stamp == inp.header.stamp, 'Time stamp got changed by the ipm'
+    assert out.header.frame_id == 'base_footprint', \
+        'Output frame is not "base_footprint"'
+    np.testing.assert_allclose(
+        rfn.structured_to_unstructured(center_output[['x', 'y', 'z']]),
         [0.0, 0.0, 0.0])

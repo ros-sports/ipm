@@ -84,11 +84,11 @@ class ImageIPM(Node):
 
         # Check if we have a mask or full image
         image_type = self.get_parameter('type').value
-        if image_type == "mask":
+        if image_type == 'mask':
             # Get indices for all non 0 pixels
             # (the pixels which should be displayed in the pointcloud)
             point_idx_tuple = np.where(image != 0)
-        elif image_type == "rgb_image":
+        elif image_type == 'rgb_image':
             # Get indices for all pixels
             X, Y = np.meshgrid(np.arange(image.shape[0]), np.arange(image.shape[1]))
             point_idx_tuple = np.vstack((X.ravel(), Y.ravel())).T
@@ -116,7 +116,7 @@ class ImageIPM(Node):
             PointField(name='z', offset=8, datatype=PointField.FLOAT32, count=1)]
 
         # Add rgb data to pointcloud
-        if image_type == "rgb_image":
+        if image_type == 'rgb_image':
             # Add additional field for rgb values
             fields.append(PointField(name='rgb', offset=12, datatype=PointField.UINT32, count=1))
             # Add unused alpha channel,
@@ -135,7 +135,7 @@ class ImageIPM(Node):
             # Copy xyz coordinates into new array
             combined_points[['x', 'y', 'z']] = rfn.unstructured_to_structured(
                 points_on_plane,
-                names=("x", "y", "z")
+                names=('x', 'y', 'z')
             )
             # Copy rgb values (that are stored in a single uint32)
             combined_points['rgb'] = pixel_values

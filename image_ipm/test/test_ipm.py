@@ -166,6 +166,7 @@ def test_ipm_image():
     image_np[..., 0] = 0
     image_np[..., 1] = 10
     image_np[..., 2] = 100
+    image_np[int(img_center_y), int(img_center_x), :] = 255
     image = cv_bridge.cv2_to_imgmsg(image_np, '8UC3')
 
     # Run ipm
@@ -179,11 +180,11 @@ def test_ipm_image():
     output_np = read_points(out)
 
     output_np = output_np.reshape(
-        camera_info.width // camera_info.binning_y,
-        camera_info.height // camera_info.binning_x)
+        camera_info.height // camera_info.binning_y,
+        camera_info.width // camera_info.binning_x)
 
     # Get center pixel
-    center_output = output_np[int(img_center_x), int(img_center_y)]
+    center_output = output_np[int(img_center_y) , int(img_center_x)]
 
     # Assert that we recived the correct message
     assert image_np.shape[0] * image_np.shape[1] == image_np.shape[0] * image_np.shape[1], \
@@ -191,6 +192,13 @@ def test_ipm_image():
     assert out.header.stamp == inp.header.stamp, 'Time stamp got changed by the ipm'
     assert out.header.frame_id == 'base_footprint', \
         'Output frame is not "base_footprint"'
+    # Check if the center pixel is projected to (0, 0, 0)
     np.testing.assert_allclose(
         rfn.structured_to_unstructured(center_output[['x', 'y', 'z']]),
         [0.0, 0.0, 0.0])
+     # Check if all values are 255 as set earlier, aka if all bits are one
+    assert center_output['rgb'] == 2**32 - 1, "RGB values of the center point changed"
+    # Calculate pointcloud binary representation of the default image rgb value
+    rgb_default_value = 255 << 24 | image_np[0, 0, 2] << 16| image_np[0, 0, 1] << 8 | image_np[0, 0, 0]
+    # Check if the default value exists in all pixels except the center pixel
+    assert np.sum(output_np['rgb'] == rgb_default_value) == image_np.shape[0] * image_np.shape[1] - 1

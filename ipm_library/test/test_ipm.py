@@ -104,29 +104,30 @@ def test_ipm_map_points_no_transform():
     plane = Plane()
     plane.coef[2] = 1.0  # Normal in z direction
     plane.coef[3] = -1.0  # 1 meter distance
-    # Create two Points on the center pixel of the camera
+    # Create points
     points = np.array([
         # Center
         [float(camera_info.width // camera_info.binning_x // 2),
-         float(camera_info.height // camera_info.binning_y // 2), 0],
+         float(camera_info.height // camera_info.binning_y // 2)],
         # Diagonal Corners
         [float(camera_info.width // camera_info.binning_x),
-         float(camera_info.height // camera_info.binning_y), 0],
-        [0, 0, 0]
+         float(camera_info.height // camera_info.binning_y)],
+        [0, 0]
     ])
     # Map points
     _, points_mapped = ipm.map_points(
         plane,
         points,
         Time())
-    # Make goal points array, x and y are not exactly 0 because of the camera calibration as
-    # well as an uneven amount of pixels
-    goal_point_array = np.array([
-        [-0.0015865,  0.014633, 1],
-        [0.7633658,  0.588668, 1],
-        [-0.7665390, -0.559401, 1]
-    ])
-    assert np.allclose(goal_point_array, points_mapped, rtol=0.0001), \
+    # Perform projection back into 2D image using projection matrix K to ensure that
+    # it's the same as the original point
+    projection_matrix = np.reshape(camera_info.k, (3, 3))
+    point_projected_2d_vec = np.matmul(projection_matrix, np.transpose(points_mapped))
+    point_projected_2d = point_projected_2d_vec[0:2]
+    # Projection doesn't consider the binning, so we need to correct for that
+    point_projected_2d[0] = point_projected_2d[0] / camera_info.binning_x
+    point_projected_2d[1] = point_projected_2d[1] / camera_info.binning_y
+    assert np.allclose(points, np.transpose(point_projected_2d), rtol=0.0001), \
         'Mapped point differs too much'
 
 
@@ -163,10 +164,10 @@ def test_ipm_map_points_no_transform_no_intersection():
     plane = Plane()
     plane.coef[2] = 1.0  # Normal in z direction
     plane.coef[3] = 1.0  # 1 meter distance
-    # Create two Points on the center pixel of the camera
+    # Create points
     points = np.array([
         # Corner
-        [0, 0, 0]
+        [0, 0]
     ])
     # Map points
     _, points_mapped = ipm.map_points(
@@ -240,15 +241,15 @@ def test_ipm_map_points():
     # Create Plane
     plane = Plane()
     plane.coef[2] = 1.0  # Normal in z direction
-    # Create two Points on the center pixel of the camera
+    # Create points
     points = np.array([
         # Center
         [float(camera_info.width // camera_info.binning_x // 2),
-         float(camera_info.height // camera_info.binning_y // 2), 0],
+         float(camera_info.height // camera_info.binning_y // 2)],
         # Diagonal Corners
         [float(camera_info.width // camera_info.binning_x),
-         float(camera_info.height // camera_info.binning_y), 0],
-        [0, 0, 0]
+         float(camera_info.height // camera_info.binning_y)],
+        [0, 0]
     ])
     # Map points
     _, points_mapped = ipm.map_points(

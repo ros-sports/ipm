@@ -137,9 +137,9 @@ def test_ipm_mask():
     image = cv_bridge.cv2_to_imgmsg(image_np, '8UC1')
 
     out, inp = standard_ipm_image_test_case(
-        'mask_in_image',
+        'input',
         image,
-        'mask_relative_pc')
+        'projected_point_cloud')
 
     # Convert point cloud to numpy
     output_np = read_points_numpy(out)
@@ -171,9 +171,9 @@ def test_ipm_image():
 
     # Run ipm
     out, inp = standard_ipm_image_test_case(
-        'mask_in_image',
+        'input',
         image,
-        'mask_relative_pc',
+        'projected_point_cloud',
         mode='rgb_image')
 
     # Convert point cloud to numpy

@@ -49,23 +49,22 @@ class ImageIPM(Node):
         # Subscribe to camera info
         self.create_subscription(CameraInfo, 'camera_info', self.ipm.set_camera_info, 1)
 
-        # Create processing pipeline
+        # Create publisher
+        result_publisher = self.create_publisher(PointCloud2, 'projected_point_cloud', 1)
 
-        # Masks
-        mask_publisher = self.create_publisher(PointCloud2, 'mask_relative_pc', 1)
-
+        # Create subsciber
         self.create_subscription(
             Image,
-            'mask_in_image',
-            lambda msg: mask_publisher.publish(self.map_mask(msg)),
+            'input',
+            lambda msg: result_publisher.publish(self.map_message(msg)),
             1)
 
-    def map_mask(self, msg: Image) -> PointCloud2:
+    def map_message(self, msg: Image) -> PointCloud2:
         """
-        Map a mask from the input image as a pointcloud on the field plane.
+        Map a mask or complete rgb image as a pointcloud on the field plane.
 
-        :param msg: Message containing a mask of pixels that should be projected
-        :param encoding: Encoding of the input mask. For the exact format see the cv_bride docs.
+        :param msg: Message containing a mask of pixels or complete
+                    rgb image that should be projected
         :returns: The projected point cloud
         """
         # Get params

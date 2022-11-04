@@ -95,7 +95,7 @@ def standard_ipm_image_test_case(
     # Spin the ipm to process the new data
     rclpy.spin_once(node, timeout_sec=0.1)
 
-    node.set_parameters([Parameter("type", value=mode)])
+    node.set_parameters([Parameter('type', value=mode)])
 
     # Send camera info message to the IPM
     camera_info.header.stamp = header.stamp

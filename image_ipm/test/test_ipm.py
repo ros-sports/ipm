@@ -197,7 +197,7 @@ def test_ipm_image():
         rfn.structured_to_unstructured(center_output[['x', 'y', 'z']]),
         [0.0, 0.0, 0.0])
     # Check if all values are 255 as set earlier, aka if all bits are one
-    assert center_output['rgb'] == 2**32 - 1, "RGB values of the center point changed"
+    assert center_output['rgb'] == 2**32 - 1, 'RGB values of the center point changed'
     # Calculate pointcloud binary representation of the default image rgb value
     rgb_default_value = \
         255 << 24 | image_np[0, 0, 2] << 16 | image_np[0, 0, 1] << 8 | image_np[0, 0, 0]

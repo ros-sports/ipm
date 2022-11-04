@@ -16,7 +16,7 @@ from typing import List, Optional, Tuple
 
 from cv_bridge import CvBridge
 from geometry_msgs.msg import TransformStamped
-from image_ipm.ipm import ImageIPM
+from ipm_image_node.ipm import IPMImageNode
 import numpy as np
 from numpy.lib import recfunctions as rfn
 import rclpy
@@ -52,7 +52,7 @@ def standard_ipm_image_test_case(
     # Init ros
     rclpy.init()
     # Create IPM node
-    node = ImageIPM()
+    node = IPMImageNode()
     # Create test node which comunicates with the IPM node
     test_node = Node('test_handler')
     # Create publishers to send data to the IPM node

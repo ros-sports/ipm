@@ -1,6 +1,6 @@
 from setuptools import setup
 
-package_name = 'image_ipm'
+package_name = 'ipm_image_node'
 
 setup(
     name=package_name,

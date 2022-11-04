@@ -30,10 +30,10 @@ import tf2_ros as tf2
 cv_bridge = CvBridge()
 
 
-class ImageIPM(Node):
+class IPMImageNode(Node):
 
     def __init__(self) -> None:
-        super().__init__('image_ipm')
+        super().__init__('ipm_image_node')
         # We need to create a tf buffer
         self.tf_buffer = tf2.Buffer(cache_time=Duration(seconds=30.0))
         self.tf_listener = tf2.TransformListener(self.tf_buffer, self)
@@ -155,7 +155,7 @@ class ImageIPM(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    node = ImageIPM()
+    node = IPMImageNode()
     ex = MultiThreadedExecutor(num_threads=4)
     ex.add_node(node)
     ex.spin()

@@ -90,8 +90,8 @@ class ImageIPM(Node):
             point_idx_tuple = np.where(image != 0)
         elif image_type == 'rgb_image':
             # Get indices for all pixels
-            X, Y = np.meshgrid(np.arange(image.shape[0]), np.arange(image.shape[1]))
-            point_idx_tuple = np.vstack((X.ravel(), Y.ravel()))
+            X, Y = np.meshgrid(np.arange(image.shape[1]), np.arange(image.shape[0]))
+            point_idx_tuple = (Y.ravel(), X.ravel())
         else:
             self.get_logger().error(f"Unsupported image type '{image_type}'!")
             return

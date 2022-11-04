@@ -148,7 +148,7 @@ class IPM:
         if not np.any(plane_msg.coef[:3]):
             raise InvalidPlaneException
 
-        assert np.shape(points)[1] == 2, 'Points must be in the form of a nx2 numpy array'
+        assert points.shape[1] == 2, 'Points must be in the form of a nx2 numpy array'
 
         # If no plane_frame_id is provided, use _camera_info's frame_id
         if plane_frame_id is None:

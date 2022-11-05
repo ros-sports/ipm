@@ -219,3 +219,12 @@ def _get_mat_from_quat(quaternion: np.ndarray) -> np.ndarray:
         [[1.0-(yYZ[0]+zZ), xXYZ[1]-wXYZ[2], xXYZ[2]+wXYZ[1]],
          [xXYZ[1]+wXYZ[2], 1.0-(xXYZ[0]+zZ), yYZ[1]-wXYZ[0]],
          [xXYZ[2]-wXYZ[1], yYZ[1]+wXYZ[0], 1.0-(xXYZ[0]+yYZ[0])]])
+
+
+def create_horizontal_plane(
+        height_offset: float = 0.0) -> Plane:
+    """Create a plane message for a given frame at a given time, with a given height offset."""
+    plane = Plane()
+    plane.coef[2] = 1.0  # Normal in z direction
+    plane.coef[3] = -height_offset  # Distance above the ground
+    return plane

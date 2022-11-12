@@ -96,7 +96,7 @@ class IPMImageNode(Node):
             return
 
         # Restructure index tuple to a array
-        point_idx_array = np.empty((point_idx_tuple[0].shape[0], 3))
+        point_idx_array = np.empty((point_idx_tuple[0].shape[0], 2))
         point_idx_array[:, 0] = point_idx_tuple[1] / scale
         point_idx_array[:, 1] = point_idx_tuple[0] / scale
 

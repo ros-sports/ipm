@@ -20,7 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            "ipm = ipm_image_node.ipm:main"
+            'ipm = ipm_image_node.ipm:main'
         ],
     },
 )

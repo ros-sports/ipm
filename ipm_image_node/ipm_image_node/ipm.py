@@ -14,6 +14,7 @@
 
 import cv2
 from cv_bridge import CvBridge
+from ipm_library.exceptions import CameraInfoNotSetException
 from ipm_library.ipm import IPM
 from ipm_library.utils import create_horizontal_plane
 import numpy as np
@@ -50,14 +51,10 @@ class IPMImageNode(Node):
         self.create_subscription(CameraInfo, 'camera_info', self.ipm.set_camera_info, 1)
 
         # Create publisher
-        result_publisher = self.create_publisher(PointCloud2, 'projected_point_cloud', 1)
+        self.result_publisher = self.create_publisher(PointCloud2, 'projected_point_cloud', 1)
 
         # Create subsciber
-        self.create_subscription(
-            Image,
-            'input',
-            lambda msg: result_publisher.publish(self.map_message(msg)),
-            1)
+        self.create_subscription(Image, 'input', self.map_message, 1)
 
     def map_message(self, msg: Image) -> PointCloud2:
         """
@@ -101,12 +98,17 @@ class IPMImageNode(Node):
         point_idx_array[:, 1] = point_idx_tuple[0] / scale
 
         # Map points
-        points_on_plane = self.ipm.map_points(
-                    field,
-                    point_idx_array,
-                    msg.header.stamp,
-                    plane_frame_id=output_frame,
-                    output_frame_id=output_frame)[1]
+        try:
+            points_on_plane = self.ipm.map_points(
+                        field,
+                        point_idx_array,
+                        msg.header.stamp,
+                        plane_frame_id=output_frame,
+                        output_frame_id=output_frame)[1]
+        except CameraInfoNotSetException:
+            self.get_logger().warn('Inverse perspective mapping should be performed, ' \
+                    + 'but no camera info was recived yet!', throttle_duration_sec=5)
+            return
 
         # Define fields of the point cloud
         fields = [
@@ -150,7 +152,7 @@ class IPMImageNode(Node):
             fields,
             points_on_plane)
 
-        return pc
+        self.result_publisher.publish(pc)
 
 
 def main(args=None):

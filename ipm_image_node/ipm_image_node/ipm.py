@@ -106,8 +106,10 @@ class IPMImageNode(Node):
                         plane_frame_id=output_frame,
                         output_frame_id=output_frame)[1]
         except CameraInfoNotSetException:
-            self.get_logger().warn('Inverse perspective mapping should be performed, ' \
-                    + 'but no camera info was recived yet!', throttle_duration_sec=5)
+            self.get_logger().warn(
+                'Inverse perspective mapping should be performed, '
+                'but no camera info was recived yet!',
+                throttle_duration_sec=5)
             return
 
         # Define fields of the point cloud

@@ -22,6 +22,7 @@ from sensor_msgs.msg import CameraInfo
 from shape_msgs.msg import Plane
 from tf2_geometry_msgs import PointStamped
 import tf2_ros
+from transforms3d.quaternions import quat2mat
 
 
 def plane_general_to_point_normal(plane: Plane) -> Tuple[np.ndarray, np.ndarray]:
@@ -176,7 +177,7 @@ def transform_points(point_cloud: np.ndarray, transform: Transform) -> np.ndarra
         transform.translation.y,
         transform.translation.z
     ])
-    transform_rotation_matrix = _get_mat_from_quat(
+    transform_rotation_matrix = quat2mat(
         np.array([
             transform.rotation.w,
             transform.rotation.x,
@@ -191,34 +192,6 @@ def transform_points(point_cloud: np.ndarray, transform: Transform) -> np.ndarra
         'ij, pj -> pi',
         transform_rotation_matrix,
         point_cloud) + transform_translation
-
-
-def _get_mat_from_quat(quaternion: np.ndarray) -> np.ndarray:
-    """
-    Convert a quaternion to a rotation matrix.
-
-    This method is currently needed because transforms3d is not released as a `.dep` and
-    would require user interaction to set up.
-    For reference see: https://github.com/matthew-brett/transforms3d/blob/
-    f185e866ecccb66c545559bc9f2e19cb5025e0ab/transforms3d/quaternions.py#L101
-
-    :param quaternion: A numpy array containing the w, x, y, and z components of the quaternion
-    :returns: The rotation matrix
-    """
-    Nq = np.sum(np.square(quaternion))
-    if Nq < np.finfo(np.float64).eps:
-        return np.eye(3)
-
-    XYZ = quaternion[1:] * 2.0 / Nq
-    wXYZ = XYZ * quaternion[0]
-    xXYZ = XYZ * quaternion[1]
-    yYZ = XYZ[1:] * quaternion[2]
-    zZ = XYZ[2] * quaternion[3]
-
-    return np.array(
-        [[1.0-(yYZ[0]+zZ), xXYZ[1]-wXYZ[2], xXYZ[2]+wXYZ[1]],
-         [xXYZ[1]+wXYZ[2], 1.0-(xXYZ[0]+zZ), yYZ[1]-wXYZ[0]],
-         [xXYZ[2]-wXYZ[1], yYZ[1]+wXYZ[0], 1.0-(xXYZ[0]+yYZ[0])]])
 
 
 def create_horizontal_plane(

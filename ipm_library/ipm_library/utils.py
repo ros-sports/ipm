@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from typing import Optional, Tuple
+from warnings import filterwarnings
 
 from builtin_interfaces.msg import Time
 from geometry_msgs.msg import Transform
@@ -22,6 +23,13 @@ from sensor_msgs.msg import CameraInfo
 from shape_msgs.msg import Plane
 from tf2_geometry_msgs import PointStamped
 import tf2_ros
+
+# Ignore deprication warning issue described in #53 
+filterwarnings(
+    action='ignore',
+    category=DeprecationWarning,
+    message='`np.float` is a deprecated alias for the builtin `float`.')
+
 from transforms3d.quaternions import quat2mat
 
 

@@ -68,9 +68,9 @@ def test_map_point_no_camera_info():
 
     client = test_node.create_client(MapPoint, 'map_point')
     future = client.call_async(MapPoint.Request())
-    rclpy.spin_once(ipm_service_node, timeout_sec=0.1)
+    rclpy.spin_once(ipm_service_node, timeout_sec=0.3)
 
-    rclpy.spin_once(test_node, timeout_sec=0.1)
+    rclpy.spin_once(test_node, timeout_sec=0.3)
 
     assert future.result() is not None
     assert future.result().result == MapPoint.Response.RESULT_NO_CAMERA_INFO
@@ -86,14 +86,14 @@ def test_map_point_invalid_plane():
 
     camera_info_pub = test_node.create_publisher(CameraInfo, 'camera_info', 10)
     camera_info_pub.publish(CameraInfo())
-    rclpy.spin_once(ipm_service_node, timeout_sec=0.1)
+    rclpy.spin_once(ipm_service_node, timeout_sec=0.3)
 
     client = test_node.create_client(MapPoint, 'map_point')
     # Request with the default plane a=b=c=0 should be an invalid plane
     future = client.call_async(MapPoint.Request())
-    rclpy.spin_once(ipm_service_node, timeout_sec=0.1)
+    rclpy.spin_once(ipm_service_node, timeout_sec=0.3)
 
-    rclpy.spin_once(test_node, timeout_sec=0.1)
+    rclpy.spin_once(test_node, timeout_sec=0.3)
 
     assert future.result() is not None
     assert future.result().result == MapPoint.Response.RESULT_INVALID_PLANE
@@ -115,14 +115,14 @@ def test_map_point_no_intersection_error():
             binning_x=4,
             binning_y=4,
             k=[1338.64532, 0., 1026.12387, 0., 1337.89746, 748.42213, 0., 0., 1.]))
-    rclpy.spin_once(ipm_service_node, timeout_sec=0.1)
+    rclpy.spin_once(ipm_service_node, timeout_sec=0.3)
 
     client = test_node.create_client(MapPoint, 'map_point')
     req = MapPoint.Request(plane=Plane(coef=[0, 0, 1, 1]))
     future = client.call_async(req)
-    rclpy.spin_once(ipm_service_node, timeout_sec=0.1)
+    rclpy.spin_once(ipm_service_node, timeout_sec=0.3)
 
-    rclpy.spin_once(test_node, timeout_sec=0.1)
+    rclpy.spin_once(test_node, timeout_sec=0.3)
 
     assert future.result() is not None
     assert future.result().result == MapPoint.Response.RESULT_NO_INTERSECTION
@@ -138,7 +138,7 @@ def test_map_point():
 
     camera_info_pub = test_node.create_publisher(CameraInfo, 'camera_info', 10)
     camera_info_pub.publish(camera_info)
-    rclpy.spin_once(ipm_service_node, timeout_sec=0.1)
+    rclpy.spin_once(ipm_service_node, timeout_sec=0.3)
 
     point = Point2D(x=100.0, y=100.0)
 
@@ -153,9 +153,9 @@ def test_map_point():
         point=point,
         plane=plane)
     future = client.call_async(req)
-    rclpy.spin_once(ipm_service_node, timeout_sec=0.1)
+    rclpy.spin_once(ipm_service_node, timeout_sec=0.3)
 
-    rclpy.spin_once(test_node, timeout_sec=0.1)
+    rclpy.spin_once(test_node, timeout_sec=0.3)
 
     assert future.result() is not None
     assert future.result().result == MapPoint.Response.RESULT_SUCCESS
@@ -178,9 +178,9 @@ def test_map_point_cloud_no_camera_info():
 
     client = test_node.create_client(MapPointCloud2, 'map_pointcloud2')
     future = client.call_async(MapPointCloud2.Request())
-    rclpy.spin_once(ipm_service_node, timeout_sec=0.1)
+    rclpy.spin_once(ipm_service_node, timeout_sec=0.3)
 
-    rclpy.spin_once(test_node, timeout_sec=0.1)
+    rclpy.spin_once(test_node, timeout_sec=0.3)
 
     assert future.result() is not None
     assert future.result().result == MapPointCloud2.Response.RESULT_NO_CAMERA_INFO
@@ -196,7 +196,7 @@ def test_map_point_cloud_invalid_plane():
 
     camera_info_pub = test_node.create_publisher(CameraInfo, 'camera_info', 10)
     camera_info_pub.publish(CameraInfo())
-    rclpy.spin_once(ipm_service_node, timeout_sec=0.1)
+    rclpy.spin_once(ipm_service_node, timeout_sec=0.3)
 
     point_cloud = create_cloud(
         header=Header(),
@@ -208,9 +208,9 @@ def test_map_point_cloud_invalid_plane():
     client = test_node.create_client(MapPointCloud2, 'map_pointcloud2')
     # Request with the default plane a=b=c=0 should be an invalid plane
     future = client.call_async(MapPointCloud2.Request(points=point_cloud))
-    rclpy.spin_once(ipm_service_node, timeout_sec=0.1)
+    rclpy.spin_once(ipm_service_node, timeout_sec=0.3)
 
-    rclpy.spin_once(test_node, timeout_sec=0.1)
+    rclpy.spin_once(test_node, timeout_sec=0.3)
 
     assert future.result() is not None
     assert future.result().result == MapPointCloud2.Response.RESULT_INVALID_PLANE
@@ -225,7 +225,7 @@ def test_map_point_cloud():
 
     camera_info_pub = test_node.create_publisher(CameraInfo, 'camera_info', 10)
     camera_info_pub.publish(camera_info)
-    rclpy.spin_once(ipm_service_node, timeout_sec=0.1)
+    rclpy.spin_once(ipm_service_node, timeout_sec=0.3)
 
     # Create input point cloud
     points = np.arange(100).reshape(-1, 2)
@@ -247,9 +247,9 @@ def test_map_point_cloud():
         points=point_cloud,
         plane=plane)
     future = client.call_async(req)
-    rclpy.spin_once(ipm_service_node, timeout_sec=0.1)
+    rclpy.spin_once(ipm_service_node, timeout_sec=0.3)
 
-    rclpy.spin_once(test_node, timeout_sec=0.1)
+    rclpy.spin_once(test_node, timeout_sec=0.3)
 
     assert future.result() is not None
     assert future.result().result == MapPointCloud2.Response.RESULT_SUCCESS

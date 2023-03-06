@@ -22,8 +22,11 @@ from numpy.lib import recfunctions as rfn
 import rclpy
 from rclpy.node import Node
 from rclpy.parameter import Parameter
-from sensor_msgs.msg import CameraInfo, Image, PointCloud2
-from sensor_msgs_py.point_cloud2 import read_points, read_points_numpy
+from sensor_msgs.msg import CameraInfo
+from sensor_msgs.msg import Image
+from sensor_msgs.msg import PointCloud2
+from sensor_msgs_py.point_cloud2 import read_points
+from sensor_msgs_py.point_cloud2 import read_points_numpy
 from std_msgs.msg import Header
 from tf2_msgs.msg import TFMessage
 
@@ -53,7 +56,7 @@ def standard_ipm_image_test_case(
     rclpy.init()
     # Create IPM node
     node = IPMImageNode()
-    # Create test node which comunicates with the IPM node
+    # Create test node which communicates with the IPM node
     test_node = Node('test_handler')
     # Create publishers to send data to the IPM node
     ball_pub = test_node.create_publisher(
@@ -63,7 +66,7 @@ def standard_ipm_image_test_case(
     tf_pub = test_node.create_publisher(
         TFMessage, 'tf', 10)
 
-    # Create a shared reference to the recived message in the local scope
+    # Create a shared reference to the received message in the local scope
     received_msg: List[Optional[PointCloud2]] = [None]
 
     # Create a callback with sets this reference
@@ -109,10 +112,10 @@ def standard_ipm_image_test_case(
     # Spin the IPM to process the new data
     rclpy.spin_once(node, timeout_sec=0.1)
 
-    # Spin the test__node to recive the results from the IPM
+    # Spin the test__node to receive the results from the IPM
     rclpy.spin_once(test_node, timeout_sec=0.1)
 
-    # Assert that we recived a message
+    # Assert that we received a message
     assert received_msg[0] is not None
 
     # Clean shutdown of the nodes
@@ -144,7 +147,7 @@ def test_ipm_mask():
     # Convert point cloud to numpy
     output_np = read_points_numpy(out)
 
-    # Assert that we recived the correct message
+    # Assert that we received the correct message
     assert len(output_np) == 2, 'Wrong number of pixels'
     assert out.header.stamp == inp.header.stamp, 'Time stamp got changed by the ipm'
     assert out.header.frame_id == 'base_footprint', \
@@ -186,7 +189,7 @@ def test_ipm_image():
     # Get center pixel
     center_output = output_np[int(img_center_y), int(img_center_x)]
 
-    # Assert that we recived the correct message
+    # Assert that we received the correct message
     assert image_np.shape[0] * image_np.shape[1] == image_np.shape[0] * image_np.shape[1], \
         'Wrong number of pixels'
     assert out.header.stamp == inp.header.stamp, 'Time stamp got changed by the ipm'

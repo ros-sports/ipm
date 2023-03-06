@@ -23,7 +23,10 @@ import rclpy
 from rclpy.duration import Duration
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
-from sensor_msgs.msg import CameraInfo, Image, PointCloud2, PointField
+from sensor_msgs.msg import CameraInfo
+from sensor_msgs.msg import Image
+from sensor_msgs.msg import PointCloud2
+from sensor_msgs.msg import PointField
 from sensor_msgs_py.point_cloud2 import create_cloud
 from std_msgs.msg import Header
 import tf2_ros as tf2
@@ -36,7 +39,7 @@ class IPMImageNode(Node):
     def __init__(self) -> None:
         super().__init__('ipm_image_node')
         # We need to create a tf buffer
-        self.tf_buffer = tf2.Buffer(cache_time=Duration(seconds=30.0))
+        self.tf_buffer = tf2.Buffer(cache_time=Duration(seconds=30))
         self.tf_listener = tf2.TransformListener(self.tf_buffer, self)
 
         # Create an IPM instance
@@ -53,19 +56,20 @@ class IPMImageNode(Node):
         # Create publisher
         self.result_publisher = self.create_publisher(PointCloud2, 'projected_point_cloud', 1)
 
-        # Create subsciber
+        # Create subscriber
         self.create_subscription(Image, 'input', self.map_message, 1)
 
-    def map_message(self, msg: Image) -> PointCloud2:
+    def map_message(self, msg: Image) -> None:
         """
         Map a mask or complete rgb image as a pointcloud on the field plane.
 
+        Publishes the projected point cloud.
+
         :param msg: Message containing a mask of pixels or complete
                     rgb image that should be projected
-        :returns: The projected point cloud
         """
         # Get params
-        scale = self.get_parameter('scale').value
+        scale: float = self.get_parameter('scale').value  # type: ignore
         output_frame = self.get_parameter('output_frame').value
 
         # Get field plane
@@ -75,8 +79,11 @@ class IPMImageNode(Node):
 
         # Convert subsampled image
         image = cv2.resize(
-            cv_bridge.imgmsg_to_cv2(msg),
-            (0, 0), fx=scale, fy=scale, interpolation=cv2.INTER_NEAREST)
+            src=cv_bridge.imgmsg_to_cv2(msg),
+            dsize=(0, 0),
+            fx=scale,  # type: ignore  # This is in fact a float, but the type stubs are wrong
+            fy=scale,  # type: ignore  # This is in fact a float, but the type stubs are wrong
+            interpolation=cv2.INTER_NEAREST)
 
         # Check if we have a mask or full image
         image_type = self.get_parameter('type').value
@@ -108,7 +115,7 @@ class IPMImageNode(Node):
         except CameraInfoNotSetException:
             self.get_logger().warn(
                 'Inverse perspective mapping should be performed, '
-                'but no camera info was recived yet!',
+                'but no camera info was received yet!',
                 throttle_duration_sec=5)
             return
 

@@ -111,6 +111,12 @@ class IPMImageNode(Node):
                 'but no camera info was recived yet!',
                 throttle_duration_sec=5)
             return
+        except (tf2.LookupException, tf2.ConnectivityException, tf2.ExtrapolationException) as e:
+            self.get_logger().warn(
+                'Inverse perspective mapping should be performed, '
+                f'but no transform was found: {e}',
+                throttle_duration_sec=5)
+            return
 
         # Define fields of the point cloud
         fields = [

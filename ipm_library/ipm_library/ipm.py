@@ -14,13 +14,12 @@
 
 from typing import Optional, Tuple
 
-from builtin_interfaces.msg import Time
 from ipm_library import utils
-from ipm_library.exceptions import (
-    CameraInfoNotSetException,
-    InvalidPlaneException,
-    NoIntersectionError)
+from ipm_library.exceptions import CameraInfoNotSetException
+from ipm_library.exceptions import InvalidPlaneException
+from ipm_library.exceptions import NoIntersectionError
 import numpy as np
+from rclpy.time import Time
 from sensor_msgs.msg import CameraInfo
 from shape_msgs.msg import Plane
 from std_msgs.msg import Header
@@ -43,13 +42,13 @@ class IPM:
         :param camera_info: `CameraInfo` Message containing the
             camera intrinsics, camera frame, ...
             The camera info can be updated later on using the setter or
-            provided directly if it is unlikly to change
+            provided directly if it is unlikely to change
         """
         # TF needs a listener that is init in the node context, so we need a reference
         self._tf_buffer = tf_buffer
         self.set_camera_info(camera_info)
 
-    def set_camera_info(self, camera_info: CameraInfo) -> None:
+    def set_camera_info(self, camera_info: Optional[CameraInfo]) -> None:
         """
         Set a new `CameraInfo` message.
 
@@ -57,7 +56,7 @@ class IPM:
         """
         self._camera_info = camera_info
 
-    def get_camera_info(self):
+    def get_camera_info(self) -> Optional[CameraInfo]:
         """
         Return the latest `CameraInfo` message.
 
@@ -93,7 +92,7 @@ class IPM:
             assumed that the plane is in CameraInfo's frame.
         :param output_frame_id: TF2 frame in which the output should be provided. If not provided,
             the returned point will be in CameraInfo's frame.
-        :rasies CameraInfoNotSetException if camera info has not been provided
+        :raises CameraInfoNotSetException if camera info has not been provided
         :raise: InvalidPlaneException if the plane is invalid
         :raise: NoIntersectionError if the point is not on the plane
         :returns: The point mapped onto the given plane in the output frame
@@ -139,11 +138,12 @@ class IPM:
         :param output_frame_id: TF2 frame in which the output should be provided. If not provided,
             the returned points will be in CameraInfo's frame.
         :returns: The points mapped onto the given plane in the output frame
-        :rasies CameraInfoNotSetException if camera info has not been provided
+        :raises CameraInfoNotSetException if camera info has not been provided
         :raises InvalidPlaneException if the plane is invalid
         """
         if not self.camera_info_received():
             raise CameraInfoNotSetException
+        assert self._camera_info is not None  # Necessary for type checker
 
         if not np.any(plane_msg.coef[:3]):
             raise InvalidPlaneException
@@ -169,7 +169,7 @@ class IPM:
             time=time,
             buffer=self._tf_buffer)
 
-        # Convert points to float if they aren't allready
+        # Convert points to float if they aren't already
         if points.dtype.char not in np.typecodes['AllFloat']:
             points = points.astype(np.float32)
 
@@ -183,9 +183,9 @@ class IPM:
         # Transform output point if output frame if needed
         if output_frame_id not in [None, self._camera_info.header.frame_id]:
             output_transformation = self._tf_buffer.lookup_transform(
-                output_frame_id,
-                self._camera_info.header.frame_id,
-                time)
+                target_frame=output_frame_id,
+                source_frame=self._camera_info.header.frame_id,
+                time=time)
             np_points = utils.transform_points(
                 np_points, output_transformation.transform)
 

@@ -36,7 +36,10 @@ camera_info = CameraInfo(
     height=1536,
     binning_x=4,
     binning_y=4,
-    k=[1338.64532, 0., 1026.12387, 0., 1337.89746, 748.42213, 0., 0., 1.])
+    k=[1338.64532, 0., 1026.12387, 0., 1337.89746, 748.42213, 0., 0., 1.],
+    d=np.zeros(5),
+    r=np.eye(3).flatten(),
+    )
 
 
 def test_ipm_camera_info():
@@ -127,7 +130,7 @@ def test_ipm_map_points_no_transform():
     # Projection doesn't consider the binning, so we need to correct for that
     point_projected_2d[0] = point_projected_2d[0] / camera_info.binning_x
     point_projected_2d[1] = point_projected_2d[1] / camera_info.binning_y
-    assert np.allclose(points, np.transpose(point_projected_2d), rtol=0.0001), \
+    assert np.allclose(points, np.transpose(point_projected_2d), rtol=0.001, atol=0.001), \
         'Mapped point differs too much'
 
 

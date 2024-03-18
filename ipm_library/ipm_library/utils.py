@@ -15,6 +15,7 @@
 from typing import Optional, Tuple
 
 from builtin_interfaces.msg import Time
+import cv2
 from geometry_msgs.msg import Transform
 import numpy as np
 from rclpy.duration import Duration
@@ -102,7 +103,8 @@ def get_field_intersection_for_pixels(
         points: np.ndarray,
         plane_normal: np.ndarray,
         plane_base_point: np.ndarray,
-        scale: float = 1.0) -> np.ndarray:
+        scale: float = 1.0,
+        use_distortion: bool = False) -> np.ndarray:
     """
     Map a NumPy array of points in image space on the given plane.
 
@@ -110,22 +112,29 @@ def get_field_intersection_for_pixels(
     :param plane_normal: The normal vector of the mapping plane
     :param plane_base_point: The base point of the mapping plane
     :param scale: A scaling factor used if e.g. a mask with a lower resolution is transformed
+    :param use_distortion: A flag to indicate if distortion should be accounted for.
+        Do not use this if you are working with pixel coordinates from a rectified image.
     :returns: A NumPy array containing the mapped points
         in 3d relative to the camera optical frame
     """
-    camera_projection_matrix = camera_info.k
-
-    # Calculate binning and scale
+    # Apply binning and scale
     binning_x = max(camera_info.binning_x, 1) / scale
     binning_y = max(camera_info.binning_y, 1) / scale
+    points = points * np.array([binning_x, binning_y])
 
-    # Create rays
-    ray_directions = np.zeros((points.shape[0], 3))
-    ray_directions[:, 0] = ((points[:, 0] - (camera_projection_matrix[2] / binning_x)) /
-                            (camera_projection_matrix[0] / binning_x))
-    ray_directions[:, 1] = ((points[:, 1] - (camera_projection_matrix[5] / binning_y)) /
-                            (camera_projection_matrix[4] / binning_y))
-    ray_directions[:, 2] = 1
+    # Create identity distortion coefficients if no distortion is used
+    if use_distortion:
+        distortion_coefficients = np.array(camera_info.d)
+    else:
+        distortion_coefficients = np.zeros(5)
+
+    # Get the ray directions relative to the camera optical frame for each of the points
+    ray_directions = np.ones((points.shape[0], 3))
+    ray_directions[:, :2] = cv2.undistortPoints(
+        points.reshape(1, -1, 2).astype(np.float32),
+        np.array(camera_info.k).reshape(3, 3),
+        distortion_coefficients,
+        R=np.array(camera_info.r).reshape(3, 3)).reshape(-1, 2)
 
     # Calculate ray -> plane intersections
     intersections = line_plane_intersections(

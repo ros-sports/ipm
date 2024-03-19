@@ -38,7 +38,6 @@ camera_info = CameraInfo(
     binning_y=4,
     k=[1338.64532, 0., 1026.12387, 0., 1337.89746, 748.42213, 0., 0., 1.],
     d=np.zeros(5),
-    r=np.eye(3).flatten(),
     )
 
 

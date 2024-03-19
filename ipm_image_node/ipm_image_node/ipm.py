@@ -35,17 +35,18 @@ class IPMImageNode(Node):
 
     def __init__(self) -> None:
         super().__init__('ipm_image_node')
+        # Declare params
+        self.declare_parameter('output_frame', 'base_footprint')
+        self.declare_parameter('type', 'mask')
+        self.declare_parameter('scale', 1.0)
+        self.declare_parameter('use_distortion', False)
+
         # We need to create a tf buffer
         self.tf_buffer = tf2.Buffer(cache_time=Duration(seconds=30.0))
         self.tf_listener = tf2.TransformListener(self.tf_buffer, self)
 
         # Create an IPM instance
-        self.ipm = IPM(self.tf_buffer)
-
-        # Declare params
-        self.declare_parameter('output_frame', 'base_footprint')
-        self.declare_parameter('type', 'mask')
-        self.declare_parameter('scale', 1.0)
+        self.ipm = IPM(self.tf_buffer, distortion=self.get_parameter('use_distortion').value)
 
         # Subscribe to camera info
         self.create_subscription(CameraInfo, 'camera_info', self.ipm.set_camera_info, 1)

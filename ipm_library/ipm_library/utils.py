@@ -133,8 +133,7 @@ def get_field_intersection_for_pixels(
     ray_directions[:, :2] = cv2.undistortPoints(
         points.reshape(1, -1, 2).astype(np.float32),
         np.array(camera_info.k).reshape(3, 3),
-        distortion_coefficients,
-        R=np.array(camera_info.r).reshape(3, 3)).reshape(-1, 2)
+        distortion_coefficients).reshape(-1, 2)
 
     # Calculate ray -> plane intersections
     intersections = line_plane_intersections(

@@ -28,11 +28,13 @@ class IPMService(Node):
 
     def __init__(self) -> None:
         super().__init__('ipm_service')
+        # Declare params
+        self.declare_parameter('use_distortion', False)
         # TF handling
         self.tf_buffer = tf2.Buffer(Duration(seconds=5))
         self.tf_listener = tf2.TransformListener(self.tf_buffer, self)
         # Create ipm library instance
-        self.ipm = IPM(self.tf_buffer)
+        self.ipm = IPM(self.tf_buffer, distortion=self.get_parameter('use_distortion').value)
         # Create subs
         self.camera_info_sub = self.create_subscription(
             CameraInfo, 'camera_info', self.ipm.set_camera_info, 1)

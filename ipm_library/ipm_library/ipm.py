@@ -35,7 +35,8 @@ class IPM:
     def __init__(
             self,
             tf_buffer: tf2_ros.Buffer,
-            camera_info: Optional[CameraInfo] = None) -> None:
+            camera_info: Optional[CameraInfo] = None,
+            distortion: bool = False) -> None:
         """
         Create a new inverse perspective mapper instance.
 
@@ -44,10 +45,13 @@ class IPM:
             camera intrinsics, camera frame, ...
             The camera info can be updated later on using the setter or
             provided directly if it is unlikly to change
+        :param distortion: Weather to use the distortion coefficients from the camera info.
+            Don't use this if you are using a rectified image.
         """
         # TF needs a listener that is init in the node context, so we need a reference
         self._tf_buffer = tf_buffer
         self.set_camera_info(camera_info)
+        self._distortion = distortion
 
     def set_camera_info(self, camera_info: CameraInfo) -> None:
         """
@@ -178,7 +182,8 @@ class IPM:
             self._camera_info,
             points,
             plane_normal,
-            plane_base_point)
+            plane_base_point,
+            use_distortion=self._distortion)
 
         # Transform output point if output frame if needed
         if output_frame_id not in [None, self._camera_info.header.frame_id]:

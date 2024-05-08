@@ -156,7 +156,7 @@ def line_plane_intersections(
     :returns: A nx3 array containing the 3d intersection points with n being the number of rays.
     """
     n_dot_u = np.tensordot(plane_normal, ray_directions, axes=([0], [1]))
-    relative_ray_distance = -plane_normal.dot(-plane_base_point) / n_dot_u
+    relative_ray_distance = plane_normal.dot(plane_base_point) / n_dot_u
 
     # we are casting a ray, intersections need to be in front of the camera
     relative_ray_distance[relative_ray_distance <= 0] = np.nan

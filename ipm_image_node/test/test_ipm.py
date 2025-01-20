@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List, Optional, Tuple
+from typing import Optional
 
 from cv_bridge import CvBridge
 from geometry_msgs.msg import TransformStamped
@@ -48,7 +48,7 @@ def standard_ipm_image_test_case(
         input_topic: str,
         input_msg: Image,
         output_topic: str,
-        mode: str = 'mask') -> Tuple[PointCloud2, Image]:
+        mode: str = 'mask') -> tuple[PointCloud2, Image]:
     # Init ros
     rclpy.init()
     # Create IPM node
@@ -64,7 +64,7 @@ def standard_ipm_image_test_case(
         TFMessage, 'tf', 10)
 
     # Create a shared reference to the recived message in the local scope
-    received_msg: List[Optional[PointCloud2]] = [None]
+    received_msg: list[Optional[PointCloud2]] = [None]
 
     # Create a callback with sets this reference
     def callback(msg):

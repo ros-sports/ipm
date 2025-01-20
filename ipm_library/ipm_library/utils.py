@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional, Tuple
+from typing import Optional
 
 from builtin_interfaces.msg import Time
 import cv2
@@ -25,7 +25,7 @@ from tf2_geometry_msgs import PointStamped
 import tf2_ros
 
 
-def plane_general_to_point_normal(plane: Plane) -> Tuple[np.ndarray, np.ndarray]:
+def plane_general_to_point_normal(plane: Plane) -> tuple[np.ndarray, np.ndarray]:
     """
     Convert general plane form to point normal form.
 
@@ -44,12 +44,12 @@ def plane_general_to_point_normal(plane: Plane) -> Tuple[np.ndarray, np.ndarray]
 
 
 def transform_plane_to_frame(
-        plane: Tuple[np.ndarray, np.ndarray],
+        plane: tuple[np.ndarray, np.ndarray],
         input_frame: str,
         output_frame: str,
         time: Time,
         buffer: tf2_ros.Buffer,
-        timeout: Optional[Duration] = None) -> Tuple[np.ndarray, np.ndarray]:
+        timeout: Optional[Duration] = None) -> tuple[np.ndarray, np.ndarray]:
     """
     Transform a plane from one frame to another.
 

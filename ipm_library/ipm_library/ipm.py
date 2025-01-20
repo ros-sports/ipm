@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional, Tuple
+from typing import Optional
 
 from builtin_interfaces.msg import Time
 from ipm_library import utils
@@ -130,7 +130,7 @@ class IPM:
             points: np.ndarray,
             time: Time,
             plane_frame_id: Optional[str] = None,
-            output_frame_id: Optional[str] = None) -> Tuple[Header, np.ndarray]:
+            output_frame_id: Optional[str] = None) -> tuple[Header, np.ndarray]:
         """
         Map image points onto a given plane using the latest CameraInfo intrinsics.
 

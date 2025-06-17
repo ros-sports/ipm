@@ -149,7 +149,7 @@ def main(args=None):
     node = IPMService()
     if fast_tf_buffer_available:
         # If bitbots_tf_buffer is available, we can use the EventsExecutor
-        # which is single threaded, using it without the decoupled bitbots_tf_buffer 
+        # which is single threaded, using it without the decoupled bitbots_tf_buffer
         # would lead to deadlocks.
         ex = EventsExecutor()
     else:

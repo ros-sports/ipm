@@ -6,4 +6,8 @@
 
 This package is only available currently for ROS2 Humble onwards.
 
+## Tip
+
+Also install the [Bit-Bots TF Buffer](https:://github.com/bit-bots/bitbots_tf_buffer) to get a significant performance boost (up to a magnitude) when using the provided IPM nodes.
+
 For more information, see our [Documentation](https://ipm-docs.readthedocs.io/)

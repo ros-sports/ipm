@@ -33,8 +33,8 @@ cv_bridge = CvBridge()
 
 class IPMImageNode(Node):
 
-    def __init__(self) -> None:
-        super().__init__('ipm_image_node')
+    def __init__(self, context=None) -> None:
+        super().__init__('ipm_image_node', context=context)
         # Declare params
         self.declare_parameter('output_frame', 'base_footprint')
         self.declare_parameter('type', 'mask')

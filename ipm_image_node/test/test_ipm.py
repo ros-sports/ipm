@@ -49,12 +49,18 @@ def standard_ipm_image_test_case(
         input_msg: Image,
         output_topic: str,
         mode: str = 'mask') -> tuple[PointCloud2, Image]:
+    # Init ros context
+    context = rclpy.context.Context()
     # Init ros
-    rclpy.init()
+    rclpy.init(context=context)
     # Create IPM node
-    node = IPMImageNode()
-    # Create test node which comunicates with the IPM node
-    test_node = Node('test_handler')
+    node = IPMImageNode(context=context)
+    # Create test node which communicates with the IPM node
+    test_node = Node('test_handler', context=context)
+    # Create executor to run both nodes
+    executor = rclpy.executors.SingleThreadedExecutor(context=context)
+    executor.add_node(node)
+    executor.add_node(test_node)
     # Create publishers to send data to the IPM node
     ball_pub = test_node.create_publisher(
         Image, input_topic, 10)
@@ -93,7 +99,7 @@ def standard_ipm_image_test_case(
         transforms=[tf]
     ))
     # Spin the ipm to process the new data
-    rclpy.spin_once(node, timeout_sec=0.1)
+    rclpy.spin_once(node, executor=executor, timeout_sec=0.1)
 
     node.set_parameters([Parameter('type', value=mode)])
 
@@ -101,24 +107,22 @@ def standard_ipm_image_test_case(
     camera_info.header.stamp = header.stamp
     camera_info_pub.publish(camera_info)
     # Spin the IPM to process the new data
-    rclpy.spin_once(node, timeout_sec=0.1)
+    rclpy.spin_once(node, executor=executor, timeout_sec=0.1)
 
     # Send image space detection
     input_msg.header = header
     ball_pub.publish(input_msg)
     # Spin the IPM to process the new data
-    rclpy.spin_once(node, timeout_sec=0.1)
+    rclpy.spin_once(node, executor=executor, timeout_sec=0.1)
 
     # Spin the test__node to recive the results from the IPM
-    rclpy.spin_once(test_node, timeout_sec=0.1)
+    rclpy.spin_once(test_node, executor=executor, timeout_sec=0.1)
 
     # Assert that we recived a message
     assert received_msg[0] is not None
 
     # Clean shutdown of the nodes
-    rclpy.shutdown()
-    node.destroy_node()
-    test_node.destroy_node()
+    rclpy.shutdown(context=context)
 
     return received_msg[0], input_msg
 

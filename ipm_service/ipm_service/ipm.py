@@ -34,8 +34,8 @@ except ImportError:
 
 class IPMService(Node):
 
-    def __init__(self) -> None:
-        super().__init__('ipm_service')
+    def __init__(self, context=None) -> None:
+        super().__init__('ipm_service', context=context)
         # Declare params
         self.declare_parameter('use_distortion', False)
         # TF handling

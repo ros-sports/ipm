@@ -121,6 +121,7 @@ def standard_ipm_image_test_case(
     # Assert that we received a message
     assert received_msg[0] is not None
 
+    # Clean shutdown of the nodes
     node.destroy_node()
     test_node.destroy_node()
     rclpy.shutdown(context=context)

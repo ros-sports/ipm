@@ -18,10 +18,18 @@ from ipm_library.ipm import IPM
 import rclpy
 from rclpy.duration import Duration
 from rclpy.executors import MultiThreadedExecutor
+from rclpy.experimental.events_executor import EventsExecutor
 from rclpy.node import Node
 from sensor_msgs.msg import CameraInfo
 from sensor_msgs_py.point_cloud2 import create_cloud_xyz32, read_points_numpy
-import tf2_ros as tf2
+
+try:
+    from bitbots_tf_buffer import Buffer, TransformListener
+    fast_tf_buffer_available = True
+except ImportError:
+    from tf2_ros import Buffer, TransformListener
+    fast_tf_buffer_available = False
+    pass  # If bitbots_tf_buffer is not available, use the default tf2.Buffer
 
 
 class IPMService(Node):
@@ -31,8 +39,8 @@ class IPMService(Node):
         # Declare params
         self.declare_parameter('use_distortion', False)
         # TF handling
-        self.tf_buffer = tf2.Buffer(Duration(seconds=5))
-        self.tf_listener = tf2.TransformListener(self.tf_buffer, self)
+        self.tf_buffer = Buffer(Duration(seconds=5))
+        self.tf_listener = TransformListener(self.tf_buffer, self)
         # Create ipm library instance
         self.ipm = IPM(self.tf_buffer, distortion=self.get_parameter('use_distortion').value)
         # Create subs
@@ -139,7 +147,13 @@ class IPMService(Node):
 def main(args=None):
     rclpy.init(args=args)
     node = IPMService()
-    ex = MultiThreadedExecutor(num_threads=4)
+    if fast_tf_buffer_available:
+        # If bitbots_tf_buffer is available, we can use the EventsExecutor
+        # which is single threaded, using it without the decoupled bitbots_tf_buffer
+        # would lead to deadlocks.
+        ex = EventsExecutor()
+    else:
+        ex = MultiThreadedExecutor(num_threads=4)
     ex.add_node(node)
     ex.spin()
     node.destroy_node()

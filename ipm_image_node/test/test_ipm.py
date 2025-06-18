@@ -118,10 +118,12 @@ def standard_ipm_image_test_case(
     # Spin the test__node to recive the results from the IPM
     rclpy.spin_once(test_node, executor=executor, timeout_sec=0.1)
 
-    # Assert that we recived a message
+    # Assert that we received a message
     assert received_msg[0] is not None
 
     # Clean shutdown of the nodes
+    node.destroy_node()
+    test_node.destroy_node()
     rclpy.shutdown(context=context)
 
     return received_msg[0], input_msg

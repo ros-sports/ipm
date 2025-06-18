@@ -58,6 +58,7 @@ def test_topics_and_services():
     assert '/map_pointcloud2' in dict_services
     assert 'ipm_interfaces/srv/MapPointCloud2' in dict_services['/map_pointcloud2']
 
+    ipm_service_node.destroy_node()
     rclpy.shutdown(context=context)
 
 
@@ -81,6 +82,8 @@ def test_map_point_no_camera_info():
     assert future.result() is not None
     assert future.result().result == MapPoint.Response.RESULT_NO_CAMERA_INFO
 
+    ipm_service_node.destroy_node()
+    test_node.destroy_node()
     rclpy.shutdown(context=context)
 
 
@@ -109,6 +112,8 @@ def test_map_point_invalid_plane():
     assert future.result() is not None
     assert future.result().result == MapPoint.Response.RESULT_INVALID_PLANE
 
+    ipm_service_node.destroy_node()
+    test_node.destroy_node()
     rclpy.shutdown(context=context)
 
 
@@ -143,6 +148,8 @@ def test_map_point_no_intersection_error():
     assert future.result() is not None
     assert future.result().result == MapPoint.Response.RESULT_NO_INTERSECTION
 
+    ipm_service_node.destroy_node()
+    test_node.destroy_node()
     rclpy.shutdown(context=context)
 
 
@@ -188,6 +195,8 @@ def test_map_point():
         Time())
     assert future.result().point == expected_point
 
+    ipm_service_node.destroy_node()
+    test_node.destroy_node()
     rclpy.shutdown(context=context)
 
 
@@ -211,6 +220,8 @@ def test_map_point_cloud_no_camera_info():
     assert future.result() is not None
     assert future.result().result == MapPointCloud2.Response.RESULT_NO_CAMERA_INFO
 
+    ipm_service_node.destroy_node()
+    test_node.destroy_node()
     rclpy.shutdown(context=context)
 
 
@@ -246,6 +257,8 @@ def test_map_point_cloud_invalid_plane():
     assert future.result() is not None
     assert future.result().result == MapPointCloud2.Response.RESULT_INVALID_PLANE
 
+    ipm_service_node.destroy_node()
+    test_node.destroy_node()
     rclpy.shutdown(context=context)
 
 
@@ -302,4 +315,6 @@ def test_map_point_cloud():
         expected_points,
         rtol=1e-06)
 
+    ipm_service_node.destroy_node()
+    test_node.destroy_node()
     rclpy.shutdown(context=context)

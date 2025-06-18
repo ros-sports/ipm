@@ -12,6 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# flake8: noqa
+
+# Suppress import of bitbots_tf_buffer
+import sys
+import types
+sys.modules['bitbots_tf_buffer'] = types.ModuleType('bitbots_tf_buffer')
+
 from builtin_interfaces.msg import Time
 from ipm_interfaces.srv import MapPoint, MapPointCloud2
 from ipm_library.ipm import IPM
@@ -24,6 +31,7 @@ from shape_msgs.msg import Plane
 from std_msgs.msg import Header
 from tf2_ros import Buffer
 from vision_msgs.msg import Point2D
+
 
 # Sample camera info
 camera_info = CameraInfo(

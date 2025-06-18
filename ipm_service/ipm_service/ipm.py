@@ -38,7 +38,6 @@ class IPMService(Node):
         super().__init__('ipm_service', context=context)
         # Declare params
         self.declare_parameter('use_distortion', False)
-        # TF handling
         self.tf_buffer = Buffer(Duration(seconds=5))
         self.tf_listener = TransformListener(self.tf_buffer, self)
         # Create ipm library instance

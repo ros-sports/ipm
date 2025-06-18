@@ -12,7 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# flake8: noqa
+
+import sys
+import types
 from typing import Optional
+
+# Suppress import of bitbots_tf_buffer
+sys.modules['bitbots_tf_buffer'] = types.ModuleType('bitbots_tf_buffer')
 
 from cv_bridge import CvBridge
 from geometry_msgs.msg import TransformStamped

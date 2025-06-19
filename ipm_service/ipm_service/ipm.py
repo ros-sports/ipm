@@ -154,9 +154,15 @@ def main(args=None):
     else:
         ex = MultiThreadedExecutor(num_threads=4)
     ex.add_node(node)
-    ex.spin()
-    node.destroy_node()
-    rclpy.shutdown()
+    try:
+        # Spin the node to process incoming messages
+        ex.spin()
+    except KeyboardInterrupt:
+        node.get_logger().info('Shutting down IPM service node.')
+    finally:
+        # Clean up the node
+        node.destroy_node()
+        rclpy.shutdown()
 
 
 if __name__ == '__main__':

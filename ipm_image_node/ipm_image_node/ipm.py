@@ -189,8 +189,8 @@ def main(args=None):
         ex.spin()
     except KeyboardInterrupt:
         # Handle keyboard interrupt gracefully
-        node.get_logger().info("Shutting down IPM Image Node...")
+        node.get_logger().info('Shutting down IPM Image Node...')
     finally:
         # Clean up resources
         node.destroy_node()
-        rclpy.shutdown()
+        rclpy.try_shutdown()

@@ -184,6 +184,13 @@ def main(args=None):
     else:
         ex = MultiThreadedExecutor(num_threads=4)
     ex.add_node(node)
-    ex.spin()
-    node.destroy_node()
-    rclpy.shutdown()
+    try:
+        # Spin the node to process incoming messages
+        ex.spin()
+    except KeyboardInterrupt:
+        # Handle keyboard interrupt gracefully
+        node.get_logger().info('Shutting down IPM Image Node...')
+    finally:
+        # Clean up resources
+        node.destroy_node()
+        rclpy.try_shutdown()

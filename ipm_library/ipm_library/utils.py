@@ -120,7 +120,9 @@ def get_field_intersection_for_pixels(
     # Apply binning and scale
     binning_x = max(camera_info.binning_x, 1) / scale
     binning_y = max(camera_info.binning_y, 1) / scale
-    points = points * np.array([binning_x, binning_y])
+    points = points.copy()
+    points[:, 0] *= binning_x
+    points[:, 1] *= binning_y
 
     # Create identity distortion coefficients if no distortion is used
     if use_distortion:
@@ -155,19 +157,13 @@ def line_plane_intersections(
     :param ray_directions: A nx3 array with n being the number of rays
     :returns: A nx3 array containing the 3d intersection points with n being the number of rays.
     """
-    n_dot_u = np.tensordot(plane_normal, ray_directions, axes=([0], [1]))
-    relative_ray_distance = plane_normal.dot(plane_base_point) / n_dot_u
+    n_dot_u = ray_directions @ plane_normal
+    relative_ray_distance = (plane_normal @ plane_base_point) / n_dot_u
 
     # we are casting a ray, intersections need to be in front of the camera
-    relative_ray_distance[relative_ray_distance <= 0] = np.nan
+    relative_ray_distance = np.where(relative_ray_distance > 0, relative_ray_distance, np.nan)
 
-    ray_directions[:, 0] = np.multiply(
-        relative_ray_distance, ray_directions[:, 0])
-    ray_directions[:, 1] = np.multiply(
-        relative_ray_distance, ray_directions[:, 1])
-    ray_directions[:, 2] = np.multiply(
-        relative_ray_distance, ray_directions[:, 2])
-
+    ray_directions *= relative_ray_distance[:, None]
     return ray_directions
 
 
@@ -196,10 +192,7 @@ def transform_points(point_cloud: np.ndarray, transform: Transform) -> np.ndarra
     # "Batched" matmul meaning a matmul for each point
     # First we offset all points by the translation part
     # followed by a rotation using the rotation matrix
-    return np.einsum(
-        'ij, pj -> pi',
-        transform_rotation_matrix,
-        point_cloud) + transform_translation
+    return point_cloud @ transform_rotation_matrix.T + transform_translation
 
 
 def _get_mat_from_quat(quaternion: np.ndarray) -> np.ndarray:

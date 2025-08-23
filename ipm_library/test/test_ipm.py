@@ -129,6 +129,7 @@ def test_ipm_map_points_no_transform():
     # Projection doesn't consider the binning, so we need to correct for that
     point_projected_2d[0] = point_projected_2d[0] / camera_info.binning_x
     point_projected_2d[1] = point_projected_2d[1] / camera_info.binning_y
+
     assert np.allclose(points, np.transpose(point_projected_2d), rtol=0.001, atol=0.001), \
         'Mapped point differs too much'
 
